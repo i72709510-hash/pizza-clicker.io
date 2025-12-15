@@ -1,0 +1,1236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pizza Clicker</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #fff;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            font-size: 3em;
+            text-shadow: 3px 3px 6px rgba(0,0,0,0.3);
+            margin-bottom: 10px;
+        }
+
+        .pizza-emoji {
+            font-size: 4em;
+            display: inline-block;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+
+        .stats-panel {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+        }
+
+        .money-display {
+            font-size: 2.5em;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .per-second {
+            font-size: 1.2em;
+            text-align: center;
+            opacity: 0.9;
+        }
+
+        .make-pizza-btn {
+            display: block;
+            width: 200px;
+            height: 200px;
+            margin: 30px auto;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            border: none;
+            border-radius: 50%;
+            font-size: 4em;
+            cursor: pointer;
+            transition: transform 0.1s, box-shadow 0.3s;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        .make-pizza-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.4);
+        }
+
+        .make-pizza-btn:active {
+            transform: scale(0.95);
+        }
+
+        .upgrades-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .save-panel {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            text-align: center;
+        }
+
+        .save-btn {
+            padding: 12px 30px;
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            border: none;
+            border-radius: 10px;
+            color: white;
+            font-size: 1em;
+            font-weight: bold;
+            cursor: pointer;
+            margin: 0 10px;
+            transition: transform 0.1s;
+        }
+
+        .save-btn:hover {
+            transform: scale(1.05);
+        }
+
+        .save-message {
+            margin-top: 10px;
+            font-size: 0.9em;
+            opacity: 0.8;
+        }
+
+        .settings-btn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            width: 60px;
+            height: 60px;
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            font-size: 1.8em;
+            cursor: pointer;
+            transition: transform 0.2s, background 0.2s;
+            z-index: 1000;
+        }
+
+        .settings-btn:hover {
+            transform: scale(1.1);
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .settings-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .settings-modal.active {
+            display: flex;
+        }
+
+        .settings-content {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+        }
+
+        .settings-content h2 {
+            margin-bottom: 30px;
+            font-size: 2em;
+            text-align: center;
+        }
+
+        .setting-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+
+        .setting-label {
+            font-size: 1.1em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .toggle-switch {
+            position: relative;
+            width: 60px;
+            height: 30px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 15px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .toggle-switch.active {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+
+        .toggle-slider {
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            width: 24px;
+            height: 24px;
+            background: white;
+            border-radius: 50%;
+            transition: transform 0.3s;
+        }
+
+        .toggle-switch.active .toggle-slider {
+            transform: translateX(30px);
+        }
+
+        .close-settings-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            border: none;
+            border-radius: 10px;
+            color: white;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: transform 0.2s;
+        }
+
+        .close-settings-btn:hover {
+            transform: scale(1.02);
+        }
+
+        .volume-control {
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        .volume-slider {
+            width: 100%;
+            height: 8px;
+            border-radius: 5px;
+            background: rgba(255, 255, 255, 0.2);
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        .volume-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            cursor: pointer;
+        }
+
+        .volume-slider::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            cursor: pointer;
+            border: none;
+        }
+
+        .upgrade-card {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .upgrade-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 40px 0 rgba(31, 38, 135, 0.5);
+        }
+
+        .upgrade-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .upgrade-icon {
+            font-size: 2.5em;
+            margin-right: 15px;
+        }
+
+        .upgrade-info h3 {
+            font-size: 1.3em;
+            margin-bottom: 5px;
+        }
+
+        .upgrade-count {
+            font-size: 0.9em;
+            opacity: 0.8;
+        }
+
+        .upgrade-description {
+            margin-bottom: 15px;
+            opacity: 0.9;
+            font-size: 0.95em;
+        }
+
+        .upgrade-btn {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            border: none;
+            border-radius: 10px;
+            color: white;
+            font-size: 1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: opacity 0.2s, transform 0.1s;
+        }
+
+        .upgrade-btn:hover:not(:disabled) {
+            transform: scale(1.02);
+        }
+
+        .upgrade-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .production-display {
+            margin-top: 10px;
+            font-size: 0.9em;
+            opacity: 0.8;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        .money-gain {
+            position: fixed;
+            font-size: 1.5em;
+            font-weight: bold;
+            pointer-events: none;
+            animation: floatUp 1s ease-out forwards;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+
+        @keyframes floatUp {
+            to {
+                transform: translateY(-100px);
+                opacity: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <button class="settings-btn" id="settingsBtn">⚙️</button>
+
+    <div class="settings-modal" id="settingsModal">
+        <div class="settings-content">
+            <h2>⚙️ Settings</h2>
+            <div class="setting-item">
+                <div class="setting-label">
+                    <span>🎵</span>
+                    <span>Background Music</span>
+                </div>
+                <div class="toggle-switch active" id="musicToggle">
+                    <div class="toggle-slider"></div>
+                </div>
+            </div>
+            <div class="setting-item">
+                <div class="setting-label">
+                    <span>🔊</span>
+                    <span>Sound Effects</span>
+                </div>
+                <div class="toggle-switch active" id="sfxToggle">
+                    <div class="toggle-slider"></div>
+                </div>
+            </div>
+            <div class="setting-item">
+                <div class="setting-label">
+                    <span>🎚️</span>
+                    <span>Music Volume</span>
+                </div>
+            </div>
+            <div class="volume-control">
+                <input type="range" min="0" max="100" value="30" class="volume-slider" id="musicVolume">
+            </div>
+            <button class="close-settings-btn" id="closeSettings">Close</button>
+        </div>
+    </div>
+
+    <div class="container">
+        <header>
+            <div class="pizza-emoji">🍕</div>
+            <h1>Pizza Clicker</h1>
+        </header>
+
+        <div class="save-panel">
+            <button class="save-btn" id="saveBtn">💾 Save Game</button>
+            <button class="save-btn" id="resetBtn">🔄 Reset Game</button>
+            <div class="save-message" id="saveMessage"></div>
+        </div>
+
+        <div class="stats-panel">
+            <div class="money-display">$<span id="money">0</span></div>
+            <div class="per-second">💰 $<span id="perSecond">0</span>/sec</div>
+            <button class="make-pizza-btn" id="makePizzaBtn">🍕</button>
+        </div>
+
+        <div class="upgrades-container" id="upgradesContainer"></div>
+    </div>
+
+    <script>
+        // Audio setup
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        let backgroundMusic = null;
+        let musicEnabled = true;
+        let sfxEnabled = true;
+        let musicVolume = 0.3;
+        let currentTrack = 0;
+
+        // Lofi beat patterns - multiple tracks
+        const lofiTracks = [
+            {
+                name: "Chill Vibes",
+                chords: [
+                    [261.63, 329.63, 392.00], [293.66, 369.99, 440.00], 
+                    [246.94, 329.63, 369.99], [220.00, 277.18, 329.63],
+                    [261.63, 329.63, 392.00], [246.94, 311.13, 369.99],
+                    [220.00, 277.18, 329.63], [293.66, 369.99, 440.00]
+                ],
+                tempo: 2000,
+                bass: [130.81, 146.83, 123.47, 110.00, 130.81, 123.47, 110.00, 146.83],
+                drumPattern: [1, 0, 1, 0, 1, 0, 1, 0],
+                bpm: 80,
+                melody: [523.25, 587.33, 659.25, 698.46, 587.33, 523.25, 440.00, 493.88, 523.25, 587.33, 659.25, 587.33, 523.25, 392.00, 440.00, 523.25],
+                leadType: 'warm', // Warm, smooth lead
+                bassStyle: 'punchy'
+            },
+            {
+                name: "Midnight Study",
+                chords: [
+                    [220.00, 277.18, 329.63], [196.00, 246.94, 293.66], 
+                    [174.61, 220.00, 261.63], [196.00, 246.94, 293.66],
+                    [220.00, 277.18, 329.63], [164.81, 207.65, 246.94],
+                    [174.61, 220.00, 261.63], [220.00, 277.18, 329.63]
+                ],
+                tempo: 2200,
+                bass: [110.00, 98.00, 87.31, 98.00, 110.00, 82.41, 87.31, 110.00],
+                drumPattern: [1, 0, 1, 1, 0, 1, 0, 1],
+                bpm: 75,
+                melody: [440.00, 392.00, 349.23, 329.63, 349.23, 392.00, 440.00, 493.88, 440.00, 392.00, 349.23, 293.66, 329.63, 349.23, 392.00, 440.00],
+                leadType: 'mellow', // Softer, more ambient
+                bassStyle: 'deep'
+            },
+            {
+                name: "Coffee Shop",
+                chords: [
+                    [293.66, 369.99, 440.00], [261.63, 329.63, 392.00], 
+                    [246.94, 311.13, 369.99], [220.00, 277.18, 329.63],
+                    [293.66, 369.99, 440.00], [329.63, 415.30, 493.88],
+                    [261.63, 329.63, 392.00], [246.94, 311.13, 369.99]
+                ],
+                tempo: 1900,
+                bass: [146.83, 130.81, 123.47, 110.00, 146.83, 164.81, 130.81, 123.47],
+                drumPattern: [1, 0, 1, 0, 1, 1, 0, 1],
+                bpm: 85,
+                melody: [587.33, 659.25, 698.46, 783.99, 698.46, 659.25, 587.33, 523.25, 587.33, 659.25, 783.99, 880.00, 783.99, 698.46, 659.25, 587.33],
+                leadType: 'bright', // Brighter, more energetic
+                bassStyle: 'groovy'
+            },
+            {
+                name: "Rainy Day",
+                chords: [
+                    [174.61, 220.00, 261.63], [196.00, 246.94, 293.66], 
+                    [164.81, 207.65, 246.94], [220.00, 277.18, 329.63],
+                    [174.61, 220.00, 261.63], [146.94, 185.00, 220.00],
+                    [164.81, 207.65, 246.94], [196.00, 246.94, 293.66]
+                ],
+                tempo: 2400,
+                bass: [87.31, 98.00, 82.41, 110.00, 87.31, 73.42, 82.41, 98.00],
+                drumPattern: [1, 0, 0, 1, 0, 1, 0, 1],
+                bpm: 70,
+                melody: [349.23, 329.63, 293.66, 261.63, 293.66, 329.63, 349.23, 392.00, 349.23, 329.63, 293.66, 329.63, 349.23, 392.00, 440.00, 392.00],
+                leadType: 'dreamy', // Atmospheric and ethereal
+                bassStyle: 'deep'
+            },
+            {
+                name: "Sunset Drive",
+                chords: [
+                    [246.94, 311.13, 369.99], [220.00, 277.18, 329.63], 
+                    [261.63, 329.63, 392.00], [293.66, 369.99, 440.00],
+                    [246.94, 311.13, 369.99], [196.00, 246.94, 293.66],
+                    [261.63, 329.63, 392.00], [220.00, 277.18, 329.63]
+                ],
+                tempo: 1850,
+                bass: [123.47, 110.00, 130.81, 146.83, 123.47, 98.00, 130.81, 110.00],
+                drumPattern: [1, 0, 1, 0, 1, 0, 1, 1],
+                bpm: 82,
+                melody: [493.88, 523.25, 587.33, 659.25, 587.33, 523.25, 493.88, 440.00, 493.88, 523.25, 587.33, 659.25, 698.46, 659.25, 587.33, 523.25],
+                leadType: 'classic', // Classic lofi sound
+                bassStyle: 'punchy'
+            }
+        ];
+
+        // Drum sounds using noise and filters
+        function playKick(time, masterGain) {
+            const osc = audioContext.createOscillator();
+            const oscGain = audioContext.createGain();
+            
+            osc.frequency.setValueAtTime(150, time);
+            osc.frequency.exponentialRampToValueAtTime(0.01, time + 0.5);
+            
+            oscGain.gain.setValueAtTime(0.2, time);
+            oscGain.gain.exponentialRampToValueAtTime(0.01, time + 0.5);
+            
+            osc.connect(oscGain);
+            oscGain.connect(masterGain);
+            
+            osc.start(time);
+            osc.stop(time + 0.5);
+        }
+
+        function playSnare(time, masterGain) {
+            const noiseBuffer = audioContext.createBuffer(1, audioContext.sampleRate * 0.2, audioContext.sampleRate);
+            const data = noiseBuffer.getChannelData(0);
+            for (let i = 0; i < data.length; i++) {
+                data[i] = Math.random() * 2 - 1;
+            }
+            
+            const noise = audioContext.createBufferSource();
+            noise.buffer = noiseBuffer;
+            
+            const noiseFilter = audioContext.createBiquadFilter();
+            noiseFilter.type = 'highpass';
+            noiseFilter.frequency.value = 1000;
+            
+            const noiseGain = audioContext.createGain();
+            noiseGain.gain.setValueAtTime(0.15, time);
+            noiseGain.gain.exponentialRampToValueAtTime(0.01, time + 0.2);
+            
+            noise.connect(noiseFilter);
+            noiseFilter.connect(noiseGain);
+            noiseGain.connect(masterGain);
+            
+            noise.start(time);
+            noise.stop(time + 0.2);
+        }
+
+        function playHiHat(time, masterGain) {
+            const noiseBuffer = audioContext.createBuffer(1, audioContext.sampleRate * 0.05, audioContext.sampleRate);
+            const data = noiseBuffer.getChannelData(0);
+            for (let i = 0; i < data.length; i++) {
+                data[i] = Math.random() * 2 - 1;
+            }
+            
+            const noise = audioContext.createBufferSource();
+            noise.buffer = noiseBuffer;
+            
+            const noiseFilter = audioContext.createBiquadFilter();
+            noiseFilter.type = 'highpass';
+            noiseFilter.frequency.value = 7000;
+            
+            const noiseGain = audioContext.createGain();
+            noiseGain.gain.setValueAtTime(0.08, time);
+            noiseGain.gain.exponentialRampToValueAtTime(0.01, time + 0.05);
+            
+            noise.connect(noiseFilter);
+            noiseFilter.connect(noiseGain);
+            noiseGain.connect(masterGain);
+            
+            noise.start(time);
+            noise.stop(time + 0.05);
+        }
+
+        function playRimshot(time, masterGain) {
+            const noiseBuffer = audioContext.createBuffer(1, audioContext.sampleRate * 0.1, audioContext.sampleRate);
+            const data = noiseBuffer.getChannelData(0);
+            for (let i = 0; i < data.length; i++) {
+                data[i] = Math.random() * 2 - 1;
+            }
+            
+            const noise = audioContext.createBufferSource();
+            noise.buffer = noiseBuffer;
+            
+            const noiseFilter = audioContext.createBiquadFilter();
+            noiseFilter.type = 'bandpass';
+            noiseFilter.frequency.value = 3000;
+            
+            const noiseGain = audioContext.createGain();
+            noiseGain.gain.setValueAtTime(0.1, time);
+            noiseGain.gain.exponentialRampToValueAtTime(0.01, time + 0.1);
+            
+            noise.connect(noiseFilter);
+            noiseFilter.connect(noiseGain);
+            noiseGain.connect(masterGain);
+            
+            noise.start(time);
+            noise.stop(time + 0.1);
+        }
+
+        // Create lofi background music using Web Audio API
+        function createLofiMusic() {
+            if (backgroundMusic) {
+                stopMusic();
+            }
+            
+            const masterGain = audioContext.createGain();
+            masterGain.gain.value = musicVolume;
+            masterGain.connect(audioContext.destination);
+
+            const track = lofiTracks[currentTrack];
+            let chordIndex = 0;
+            let drumBeatIndex = 0;
+            let melodyIndex = 0;
+            let isPlaying = true;
+            const beatDuration = 60000 / track.bpm; // milliseconds per beat
+
+            function playChord() {
+                if (!isPlaying) return;
+
+                const chord = track.chords[chordIndex];
+                const bassNote = track.bass[chordIndex];
+                const now = audioContext.currentTime;
+
+                // Play chord with subtle variations and added complexity
+                chord.forEach((freq, i) => {
+                    // Main chord voice
+                    const osc = audioContext.createOscillator();
+                    const gain = audioContext.createGain();
+                    const filter = audioContext.createBiquadFilter();
+                    
+                    osc.type = 'sine';
+                    osc.frequency.value = freq * (1 + (Math.random() - 0.5) * 0.002);
+                    
+                    filter.type = 'lowpass';
+                    filter.frequency.value = 2000;
+                    filter.Q.value = 1;
+                    
+                    gain.gain.setValueAtTime(0, now);
+                    gain.gain.linearRampToValueAtTime(0.04, now + 0.1);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 3);
+                    
+                    osc.connect(filter);
+                    filter.connect(gain);
+                    gain.connect(masterGain);
+                    
+                    osc.start(now);
+                    osc.stop(now + 3);
+
+                    // Add octave voice for richness
+                    if (i === 0) {
+                        const octaveOsc = audioContext.createOscillator();
+                        const octaveGain = audioContext.createGain();
+                        
+                        octaveOsc.type = 'triangle';
+                        octaveOsc.frequency.value = freq * 2;
+                        
+                        octaveGain.gain.setValueAtTime(0, now);
+                        octaveGain.gain.linearRampToValueAtTime(0.015, now + 0.1);
+                        octaveGain.gain.exponentialRampToValueAtTime(0.001, now + 3);
+                        
+                        octaveOsc.connect(octaveGain);
+                        octaveGain.connect(masterGain);
+                        
+                        octaveOsc.start(now);
+                        octaveOsc.stop(now + 3);
+                    }
+                });
+
+                // Play bass note with more character
+                const bassOsc = audioContext.createOscillator();
+                const bassOsc2 = audioContext.createOscillator();
+                const bassGain = audioContext.createGain();
+                const bassFilter = audioContext.createBiquadFilter();
+                
+                bassOsc.type = 'triangle';
+                bassOsc.frequency.value = bassNote;
+                bassOsc2.type = 'sine';
+                bassOsc2.frequency.value = bassNote * 0.5; // Sub bass
+                
+                bassFilter.type = 'lowpass';
+                bassFilter.frequency.value = 400;
+                
+                bassGain.gain.setValueAtTime(0, now);
+                bassGain.gain.linearRampToValueAtTime(0.08, now + 0.05);
+                bassGain.gain.exponentialRampToValueAtTime(0.001, now + 2);
+                
+                bassOsc.connect(bassFilter);
+                bassOsc2.connect(bassFilter);
+                bassFilter.connect(bassGain);
+                bassGain.connect(masterGain);
+                
+                bassOsc.start(now);
+                bassOsc2.start(now);
+                bassOsc.stop(now + 2);
+                bassOsc2.stop(now + 2);
+
+                chordIndex = (chordIndex + 1) % track.chords.length;
+            }
+
+            function playMelody() {
+                if (!isPlaying) return;
+
+                const now = audioContext.currentTime;
+                const melodyNote = track.melody[melodyIndex];
+
+                // Vary synth character based on track's leadType
+                const leadConfig = {
+                    warm: { osc1: 'sawtooth', osc2: 'triangle', filterBase: 600, filterPeak: 1200, gain: 0.025, q: 2 },
+                    mellow: { osc1: 'sine', osc2: 'triangle', filterBase: 400, filterPeak: 800, gain: 0.02, q: 1 },
+                    bright: { osc1: 'square', osc2: 'sawtooth', filterBase: 800, filterPeak: 1800, gain: 0.028, q: 3 },
+                    dreamy: { osc1: 'sine', osc2: 'sine', filterBase: 500, filterPeak: 1000, gain: 0.018, q: 1.5 },
+                    classic: { osc1: 'sawtooth', osc2: 'square', filterBase: 650, filterPeak: 1400, gain: 0.025, q: 2.5 }
+                };
+
+                const config = leadConfig[track.leadType] || leadConfig.classic;
+
+                // Create lofi character with different timbres per track
+                const osc = audioContext.createOscillator();
+                const osc2 = audioContext.createOscillator();
+                const osc3 = audioContext.createOscillator();
+                const gain = audioContext.createGain();
+                const filter = audioContext.createBiquadFilter();
+                const filter2 = audioContext.createBiquadFilter();
+                
+                // Varied oscillator setup per track
+                osc.type = config.osc1;
+                osc.frequency.value = melodyNote * (1 - Math.random() * 0.003);
+                osc2.type = config.osc2;
+                osc2.frequency.value = melodyNote * (1 + Math.random() * 0.003);
+                osc3.type = 'triangle';
+                osc3.frequency.value = melodyNote * 0.5;
+                
+                // Track-specific filter settings
+                filter.type = 'lowpass';
+                filter.frequency.setValueAtTime(config.filterBase, now);
+                filter.frequency.exponentialRampToValueAtTime(config.filterPeak, now + 0.2);
+                filter.frequency.exponentialRampToValueAtTime(config.filterBase * 0.8, now + 0.8);
+                filter.Q.value = config.q;
+                
+                filter2.type = 'highpass';
+                filter2.frequency.value = track.leadType === 'dreamy' ? 150 : 100;
+                
+                // Track-specific envelope
+                const attackTime = track.leadType === 'bright' ? 0.02 : 0.05;
+                const sustainLevel = config.gain;
+                
+                gain.gain.setValueAtTime(0, now);
+                gain.gain.linearRampToValueAtTime(sustainLevel, now + attackTime);
+                gain.gain.linearRampToValueAtTime(sustainLevel * 0.8, now + 0.4);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 1.2);
+                
+                osc.connect(filter);
+                osc2.connect(filter);
+                osc3.connect(filter);
+                filter.connect(filter2);
+                filter2.connect(gain);
+                gain.connect(masterGain);
+                
+                osc.start(now);
+                osc2.start(now);
+                osc3.start(now);
+                osc.stop(now + 1.2);
+                osc2.stop(now + 1.2);
+                osc3.stop(now + 1.2);
+
+                // Varied crackle intensity per track
+                const crackleChance = track.leadType === 'dreamy' ? 0.5 : 0.7;
+                if (Math.random() > crackleChance) {
+                    const crackleBuffer = audioContext.createBuffer(1, audioContext.sampleRate * 0.02, audioContext.sampleRate);
+                    const crackleData = crackleBuffer.getChannelData(0);
+                    for (let j = 0; j < crackleData.length; j++) {
+                        crackleData[j] = (Math.random() * 2 - 1) * 0.02;
+                    }
+                    
+                    const crackle = audioContext.createBufferSource();
+                    crackle.buffer = crackleBuffer;
+                    
+                    const crackleGain = audioContext.createGain();
+                    crackleGain.gain.value = 0.008;
+                    
+                    crackle.connect(crackleGain);
+                    crackleGain.connect(masterGain);
+                    
+                    crackle.start(now);
+                }
+
+                melodyIndex = (melodyIndex + 1) % track.melody.length;
+                
+                // Play melody every beat for more complexity
+                setTimeout(() => {
+                    if (isPlaying) playMelody();
+                }, beatDuration);
+            }
+
+            function playDrumBeat() {
+                if (!isPlaying) return;
+
+                const now = audioContext.currentTime;
+                
+                // Hi-hat on every beat
+                playHiHat(now, masterGain);
+                
+                // Kick and snare based on pattern
+                if (drumBeatIndex % 2 === 0) {
+                    playKick(now, masterGain);
+                } else if (track.drumPattern[drumBeatIndex] === 1) {
+                    playSnare(now, masterGain);
+                }
+
+                // Add occasional rimshot for variation
+                if (drumBeatIndex === 7 && Math.random() > 0.5) {
+                    playRimshot(now, masterGain);
+                }
+
+                drumBeatIndex = (drumBeatIndex + 1) % 8;
+                
+                // Schedule next drum beat
+                setTimeout(playDrumBeat, beatDuration);
+            }
+
+            function startChordLoop() {
+                if (!isPlaying) return;
+                playChord();
+                setTimeout(startChordLoop, beatDuration * 4); // 4 beats per chord
+            }
+
+            backgroundMusic = { 
+                masterGain, 
+                stop: () => { isPlaying = false; }
+            };
+            
+            startChordLoop();
+            playDrumBeat(); // Start drum loop separately
+            playMelody(); // Start melody loop
+
+            // Fade out after 85 seconds (giving 5 seconds for fade), then switch track
+            setTimeout(() => {
+                if (musicEnabled && backgroundMusic) {
+                    // Fade out over 5 seconds
+                    const fadeStart = audioContext.currentTime;
+                    masterGain.gain.setValueAtTime(musicVolume, fadeStart);
+                    masterGain.gain.linearRampToValueAtTime(0.001, fadeStart + 5);
+                    
+                    // 5 seconds of silence after fade completes, then switch track
+                    setTimeout(() => {
+                        if (musicEnabled) {
+                            currentTrack = (currentTrack + 1) % lofiTracks.length;
+                            createLofiMusic();
+                        }
+                    }, 10000); // 5 second fade + 5 second silence
+                }
+            }, 85000); // Play for 85 seconds before starting fade (~1.5 minutes total)
+        }
+
+        function stopMusic() {
+            if (backgroundMusic) {
+                backgroundMusic.stop();
+                backgroundMusic = null;
+            }
+        }
+
+        // Purchase sound effect
+        function playPurchaseSound() {
+            if (!sfxEnabled) return;
+
+            const osc = audioContext.createOscillator();
+            const gain = audioContext.createGain();
+            
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(523.25, audioContext.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(783.99, audioContext.currentTime + 0.1);
+            
+            gain.gain.setValueAtTime(0.3, audioContext.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2);
+            
+            osc.connect(gain);
+            gain.connect(audioContext.destination);
+            
+            osc.start(audioContext.currentTime);
+            osc.stop(audioContext.currentTime + 0.2);
+        }
+
+        // Click sound effect
+        function playClickSound() {
+            if (!sfxEnabled) return;
+
+            const osc = audioContext.createOscillator();
+            const gain = audioContext.createGain();
+            
+            osc.type = 'sine';
+            osc.frequency.value = 800;
+            
+            gain.gain.setValueAtTime(0.1, audioContext.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.05);
+            
+            osc.connect(gain);
+            gain.connect(audioContext.destination);
+            
+            osc.start(audioContext.currentTime);
+            osc.stop(audioContext.currentTime + 0.05);
+        }
+
+        const game = {
+            money: 0,
+            moneyPerClick: 1,
+            moneyPerSecond: 0,
+            upgrades: [
+                { id: 'cursor', name: 'Pizza Cursor', icon: '👆', description: 'Click faster with better technique', baseCost: 10, baseProduction: 0.1, count: 0 },
+                { id: 'chef', name: 'Junior Chef', icon: '👨‍🍳', description: 'A skilled chef to make pizzas automatically', baseCost: 15, baseProduction: 0.5, count: 0 },
+                { id: 'doughBall', name: 'Dough Ball', icon: '⚪', description: 'Pre-made dough saves time', baseCost: 25, baseProduction: 0.8, count: 0 },
+                { id: 'rollingPin', name: 'Rolling Pin', icon: '🎯', description: 'Perfectly flat dough every time', baseCost: 50, baseProduction: 1.5, count: 0 },
+                { id: 'oven', name: 'Pizza Oven', icon: '🔥', description: 'A better oven to cook pizzas faster', baseCost: 100, baseProduction: 3, count: 0 },
+                { id: 'sauce', name: 'Secret Sauce', icon: '🥫', description: 'A special recipe that customers love', baseCost: 200, baseProduction: 5, count: 0 },
+                { id: 'cheese', name: 'Premium Cheese', icon: '🧀', description: 'The finest mozzarella money can buy', baseCost: 350, baseProduction: 8, count: 0 },
+                { id: 'deliveryDriver', name: 'Delivery Driver', icon: '🛵', description: 'Fast delivery means more orders', baseCost: 500, baseProduction: 12, count: 0 },
+                { id: 'pepperoni', name: 'Pepperoni Supplier', icon: '🍖', description: 'Never run out of toppings', baseCost: 750, baseProduction: 18, count: 0 },
+                { id: 'mixer', name: 'Industrial Mixer', icon: '🌀', description: 'Mix dough faster and more efficiently', baseCost: 1200, baseProduction: 28, count: 0 },
+                { id: 'pizzaCutter', name: 'Pizza Cutter', icon: '⭕', description: 'Perfect slices every time', baseCost: 1800, baseProduction: 40, count: 0 },
+                { id: 'seniorChef', name: 'Senior Chef', icon: '👨‍🍳', description: 'Years of experience in every pizza', baseCost: 2500, baseProduction: 60, count: 0 },
+                { id: 'restaurant', name: 'Small Restaurant', icon: '🏪', description: 'A cozy place for dine-in customers', baseCost: 3500, baseProduction: 85, count: 0 },
+                { id: 'cashier', name: 'Cashier', icon: '💵', description: 'Someone to handle the money', baseCost: 5000, baseProduction: 120, count: 0 },
+                { id: 'sousChef', name: 'Sous Chef', icon: '👩‍🍳', description: 'Expert assistant chef for quality control', baseCost: 7500, baseProduction: 170, count: 0 },
+                { id: 'convectionOven', name: 'Convection Oven', icon: '🔥', description: 'Even heat distribution for perfect pizzas', baseCost: 10000, baseProduction: 240, count: 0 },
+                { id: 'franchise', name: 'Franchise Location', icon: '🏢', description: 'Open a new location across town', baseCost: 15000, baseProduction: 350, count: 0 },
+                { id: 'deliveryFleet', name: 'Delivery Fleet', icon: '🚗', description: 'Multiple drivers delivering at once', baseCost: 20000, baseProduction: 500, count: 0 },
+                { id: 'marketingTeam', name: 'Marketing Team', icon: '📢', description: 'Spread the word and attract customers', baseCost: 30000, baseProduction: 700, count: 0 },
+                { id: 'organicIngredients', name: 'Organic Ingredients', icon: '🌿', description: 'Premium organic toppings', baseCost: 42000, baseProduction: 1000, count: 0 },
+                { id: 'pizzaBot', name: 'Pizza Bot', icon: '🤖', description: 'Automated pizza assembly', baseCost: 58000, baseProduction: 1400, count: 0 },
+                { id: 'factory', name: 'Pizza Factory', icon: '🏭', description: 'Mass produce pizzas with efficiency', baseCost: 75000, baseProduction: 2000, count: 0 },
+                { id: 'warehouse', name: 'Warehouse', icon: '📦', description: 'Store ingredients in bulk', baseCost: 100000, baseProduction: 2800, count: 0 },
+                { id: 'qualityControl', name: 'Quality Control', icon: '✅', description: 'Every pizza is perfect', baseCost: 130000, baseProduction: 3900, count: 0 },
+                { id: 'foodTruck', name: 'Food Truck Fleet', icon: '🚚', description: 'Mobile pizza operations everywhere', baseCost: 170000, baseProduction: 5500, count: 0 },
+                { id: 'droneDelivery', name: 'Drone Delivery', icon: '🚁', description: 'Pizzas from the sky', baseCost: 220000, baseProduction: 7700, count: 0 },
+                { id: 'pizzaSchool', name: 'Pizza School', icon: '🎓', description: 'Train the next generation of chefs', baseCost: 280000, baseProduction: 10800, count: 0 },
+                { id: 'megaRestaurant', name: 'Mega Restaurant', icon: '🏰', description: 'A massive dining destination', baseCost: 360000, baseProduction: 15000, count: 0 },
+                { id: 'celebrity', name: 'Celebrity Chef', icon: '⭐', description: 'A famous chef brings prestige', baseCost: 500000, baseProduction: 21000, count: 0 },
+                { id: 'bookDeal', name: 'Cookbook Deal', icon: '📖', description: 'Share your recipes with the world', baseCost: 650000, baseProduction: 29000, count: 0 },
+                { id: 'tvShow', name: 'TV Cooking Show', icon: '📺', description: 'Your own pizza cooking show', baseCost: 850000, baseProduction: 40000, count: 0 },
+                { id: 'pizzaMerch', name: 'Pizza Merchandise', icon: '👕', description: 'Sell branded pizza gear', baseCost: 1100000, baseProduction: 56000, count: 0 },
+                { id: 'internationalFranchise', name: 'International Franchise', icon: '🌍', description: 'Expand globally', baseCost: 1400000, baseProduction: 78000, count: 0 },
+                { id: 'michelinStar', name: 'Michelin Star', icon: '🌟', description: 'Prestigious culinary recognition', baseCost: 1850000, baseProduction: 109000, count: 0 },
+                { id: 'researchLab', name: 'Research Lab', icon: '🔬', description: 'Develop revolutionary pizza science', baseCost: 2400000, baseProduction: 152000, count: 0 },
+                { id: 'aiChef', name: 'AI Chef System', icon: '🤖', description: 'Machine learning perfects recipes', baseCost: 3200000, baseProduction: 213000, count: 0 },
+                { id: 'pizzaThemePark', name: 'Pizza Theme Park', icon: '🎡', description: 'An entire park dedicated to pizza', baseCost: 4200000, baseProduction: 298000, count: 0 },
+                { id: 'empire', name: 'Pizza Empire', icon: '👑', description: 'Rule the pizza industry', baseCost: 5500000, baseProduction: 417000, count: 0 },
+                { id: 'pizzaUniversity', name: 'Pizza University', icon: '🏫', description: 'Advanced culinary education', baseCost: 7200000, baseProduction: 584000, count: 0 },
+                { id: 'pizzaCoin', name: 'Pizza Cryptocurrency', icon: '💎', description: 'Launch your own crypto', baseCost: 9500000, baseProduction: 818000, count: 0 },
+                { id: 'quantumOven', name: 'Quantum Oven', icon: '⚛️', description: 'Cook pizzas at the quantum level', baseCost: 12500000, baseProduction: 1145000, count: 0 },
+                { id: 'pizzaSatellite', name: 'Pizza Satellite', icon: '🛰️', description: 'Monitor global pizza demand from space', baseCost: 16500000, baseProduction: 1603000, count: 0 },
+                { id: 'pizzaCity', name: 'Pizza City', icon: '🌆', description: 'An entire city devoted to pizza', baseCost: 21500000, baseProduction: 2244000, count: 0 },
+                { id: 'cloneArmy', name: 'Clone Army', icon: '👥', description: 'Clones of your best chefs', baseCost: 28000000, baseProduction: 3142000, count: 0 },
+                { id: 'pizzaRocket', name: 'Pizza Rocket', icon: '🚀', description: 'Launch pizzas to space stations', baseCost: 37000000, baseProduction: 4399000, count: 0 },
+                { id: 'spaceStation', name: 'Space Pizza Station', icon: '🛸', description: 'Pizza production in orbit', baseCost: 49000000, baseProduction: 6159000, count: 0 },
+                { id: 'alienChef', name: 'Alien Chef', icon: '👽', description: 'Extraterrestrial pizza expertise', baseCost: 65000000, baseProduction: 8623000, count: 0 },
+                { id: 'pizzaPlanet', name: 'Pizza Planet', icon: '🪐', description: 'An entire planet of pizza production', baseCost: 85000000, baseProduction: 12072000, count: 0 },
+                { id: 'wormhole', name: 'Wormhole Network', icon: '🌀', description: 'Instant delivery across the galaxy', baseCost: 110000000, baseProduction: 16901000, count: 0 },
+                { id: 'timeMachine', name: 'Time Machine', icon: '⏰', description: 'Deliver pizzas before they\'re ordered', baseCost: 145000000, baseProduction: 23661000, count: 0 },
+                { id: 'pizzaGod', name: 'Pizza Deity', icon: '✨', description: 'Ascend to pizza godhood', baseCost: 190000000, baseProduction: 33125000, count: 0 },
+                { id: 'dimensionalRift', name: 'Dimensional Rift', icon: '🌈', description: 'Access parallel pizza universes', baseCost: 250000000, baseProduction: 46375000, count: 0 },
+                { id: 'pizzaMatrix', name: 'Pizza Matrix', icon: '💻', description: 'Simulate infinite pizza realities', baseCost: 330000000, baseProduction: 64925000, count: 0 },
+                { id: 'cosmicOven', name: 'Cosmic Oven', icon: '🌌', description: 'Harness the power of stars', baseCost: 430000000, baseProduction: 90895000, count: 0 },
+                { id: 'pizzaPantheon', name: 'Pizza Pantheon', icon: '⛩️', description: 'A temple to the pizza gods', baseCost: 560000000, baseProduction: 127253000, count: 0 },
+                { id: 'multiverse', name: 'Multiverse Pizza', icon: '∞', description: 'Pizza across infinite realities', baseCost: 730000000, baseProduction: 178154000, count: 0 },
+                { id: 'bigBang', name: 'Big Bang Pizza', icon: '💥', description: 'Create universes made of pizza', baseCost: 950000000, baseProduction: 249416000, count: 0 },
+                { id: 'omnipotence', name: 'Pizza Omnipotence', icon: '🔱', description: 'Unlimited cosmic pizza power', baseCost: 1250000000, baseProduction: 349182000, count: 0 },
+                { id: 'eternity', name: 'Eternal Pizza', icon: '♾️', description: 'Pizza that transcends time itself', baseCost: 1650000000, baseProduction: 488855000, count: 0 },
+                { id: 'singularity', name: 'Pizza Singularity', icon: '⚫', description: 'The ultimate pizza convergence', baseCost: 2150000000, baseProduction: 684397000, count: 0 }
+            ]
+        };
+
+        function formatNumber(num) {
+            if (num >= 1000000000) return (num / 1000000000).toFixed(2) + 'B';
+            if (num >= 1000000) return (num / 1000000).toFixed(2) + 'M';
+            if (num >= 1000) return (num / 1000).toFixed(2) + 'K';
+            return Math.floor(num);
+        }
+
+        function getUpgradeCost(upgrade) {
+            return Math.floor(upgrade.baseCost * Math.pow(1.15, upgrade.count));
+        }
+
+        function getUpgradeProduction(upgrade) {
+            return upgrade.baseProduction * upgrade.count;
+        }
+
+        function calculateMoneyPerSecond() {
+            game.moneyPerSecond = 0;
+            game.upgrades.forEach(upgrade => {
+                game.moneyPerSecond += getUpgradeProduction(upgrade);
+            });
+        }
+
+        function showMoneyGain(amount, x, y) {
+            const elem = document.createElement('div');
+            elem.className = 'money-gain';
+            elem.textContent = '+$' + amount;
+            elem.style.left = x + 'px';
+            elem.style.top = y + 'px';
+            document.body.appendChild(elem);
+            setTimeout(() => elem.remove(), 1000);
+        }
+
+        function makePizza(e) {
+            game.money += game.moneyPerClick;
+            updateDisplay();
+            showMoneyGain(game.moneyPerClick, e.clientX, e.clientY);
+            playClickSound();
+        }
+
+        function buyUpgrade(upgradeId) {
+            const upgrade = game.upgrades.find(u => u.id === upgradeId);
+            const cost = getUpgradeCost(upgrade);
+            
+            if (game.money >= cost) {
+                game.money -= cost;
+                upgrade.count++;
+                calculateMoneyPerSecond();
+                updateDisplay();
+                playPurchaseSound();
+            }
+        }
+
+        function updateDisplay() {
+            document.getElementById('money').textContent = formatNumber(game.money);
+            document.getElementById('perSecond').textContent = formatNumber(game.moneyPerSecond);
+            
+            game.upgrades.forEach(upgrade => {
+                const cost = getUpgradeCost(upgrade);
+                const btn = document.getElementById(`btn-${upgrade.id}`);
+                const count = document.getElementById(`count-${upgrade.id}`);
+                const production = document.getElementById(`prod-${upgrade.id}`);
+                
+                btn.textContent = `Buy - $${formatNumber(cost)}`;
+                btn.disabled = game.money < cost;
+                count.textContent = `Owned: ${upgrade.count}`;
+                production.textContent = `📈 +$${formatNumber(getUpgradeProduction(upgrade))}/sec`;
+            });
+        }
+
+        function createUpgradeCards() {
+            const container = document.getElementById('upgradesContainer');
+            game.upgrades.forEach(upgrade => {
+                const card = document.createElement('div');
+                card.className = 'upgrade-card';
+                card.innerHTML = `
+                    <div class="upgrade-header">
+                        <div class="upgrade-icon">${upgrade.icon}</div>
+                        <div class="upgrade-info">
+                            <h3>${upgrade.name}</h3>
+                            <div class="upgrade-count" id="count-${upgrade.id}">Owned: 0</div>
+                        </div>
+                    </div>
+                    <div class="upgrade-description">${upgrade.description}</div>
+                    <button class="upgrade-btn" id="btn-${upgrade.id}">Buy - $${upgrade.baseCost}</button>
+                    <div class="production-display" id="prod-${upgrade.id}">📈 +$0/sec</div>
+                `;
+                container.appendChild(card);
+                
+                document.getElementById(`btn-${upgrade.id}`).addEventListener('click', () => buyUpgrade(upgrade.id));
+            });
+        }
+
+        document.getElementById('makePizzaBtn').addEventListener('click', makePizza);
+
+        // Save/Load functionality
+        function saveGame() {
+            const saveData = {
+                money: game.money,
+                upgrades: game.upgrades.map(u => ({ id: u.id, count: u.count })),
+                settings: {
+                    musicEnabled,
+                    sfxEnabled,
+                    musicVolume
+                }
+            };
+            localStorage.setItem('pizzaTycoonSave', JSON.stringify(saveData));
+            
+            const msg = document.getElementById('saveMessage');
+            msg.textContent = '✅ Game saved!';
+            setTimeout(() => msg.textContent = '', 2000);
+        }
+
+        function loadGame() {
+            const saveData = localStorage.getItem('pizzaTycoonSave');
+            if (saveData) {
+                const data = JSON.parse(saveData);
+                game.money = data.money;
+                data.upgrades.forEach(savedUpgrade => {
+                    const upgrade = game.upgrades.find(u => u.id === savedUpgrade.id);
+                    if (upgrade) {
+                        upgrade.count = savedUpgrade.count;
+                    }
+                });
+                
+                // Load settings
+                if (data.settings) {
+                    musicEnabled = data.settings.musicEnabled !== false;
+                    sfxEnabled = data.settings.sfxEnabled !== false;
+                    musicVolume = data.settings.musicVolume || 0.3;
+                    
+                    updateSettingsUI();
+                }
+                
+                calculateMoneyPerSecond();
+                updateDisplay();
+                
+                const msg = document.getElementById('saveMessage');
+                msg.textContent = '✅ Game loaded!';
+                setTimeout(() => msg.textContent = '', 2000);
+            }
+        }
+
+        function resetGame() {
+            if (confirm('Are you sure you want to reset your game? This cannot be undone!')) {
+                localStorage.removeItem('pizzaTycoonSave');
+                location.reload();
+            }
+        }
+
+        document.getElementById('saveBtn').addEventListener('click', saveGame);
+        document.getElementById('resetBtn').addEventListener('click', resetGame);
+
+        // Settings functionality
+        const settingsBtn = document.getElementById('settingsBtn');
+        const settingsModal = document.getElementById('settingsModal');
+        const closeSettingsBtn = document.getElementById('closeSettings');
+        const musicToggle = document.getElementById('musicToggle');
+        const sfxToggle = document.getElementById('sfxToggle');
+        const musicVolumeSlider = document.getElementById('musicVolume');
+
+        settingsBtn.addEventListener('click', () => {
+            settingsModal.classList.add('active');
+            // Start music on first user interaction
+            if (!backgroundMusic && musicEnabled) {
+                createLofiMusic();
+            }
+        });
+
+        closeSettingsBtn.addEventListener('click', () => {
+            settingsModal.classList.remove('active');
+        });
+
+        settingsModal.addEventListener('click', (e) => {
+            if (e.target === settingsModal) {
+                settingsModal.classList.remove('active');
+            }
+        });
+
+        musicToggle.addEventListener('click', () => {
+            musicEnabled = !musicEnabled;
+            musicToggle.classList.toggle('active');
+            
+            if (musicEnabled && !backgroundMusic) {
+                createLofiMusic();
+            } else if (!musicEnabled && backgroundMusic) {
+                stopMusic();
+            }
+            saveGame();
+        });
+
+        sfxToggle.addEventListener('click', () => {
+            sfxEnabled = !sfxEnabled;
+            sfxToggle.classList.toggle('active');
+            saveGame();
+        });
+
+        musicVolumeSlider.addEventListener('input', (e) => {
+            musicVolume = e.target.value / 100;
+            if (backgroundMusic && musicEnabled) {
+                backgroundMusic.masterGain.gain.value = musicVolume;
+            }
+        });
+
+        musicVolumeSlider.addEventListener('change', () => {
+            saveGame();
+        });
+
+        function updateSettingsUI() {
+            musicToggle.classList.toggle('active', musicEnabled);
+            sfxToggle.classList.toggle('active', sfxEnabled);
+            musicVolumeSlider.value = musicVolume * 100;
+            
+            if (backgroundMusic && musicEnabled) {
+                backgroundMusic.masterGain.gain.value = musicVolume;
+            }
+        }
+
+        // Start music on first click
+        document.addEventListener('click', () => {
+            if (!backgroundMusic && musicEnabled) {
+                createLofiMusic();
+            }
+        }, { once: true });
+
+        // Auto-save every 30 seconds
+        setInterval(saveGame, 30000);
+
+        setInterval(() => {
+            game.money += game.moneyPerSecond / 10;
+            updateDisplay();
+        }, 100);
+
+        createUpgradeCards();
+        loadGame();
+        updateDisplay();
+    </script>
+</body>
+</html>
