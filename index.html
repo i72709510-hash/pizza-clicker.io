@@ -1,0 +1,1386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pizza Clicker</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🍕</text></svg>">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #fff;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            font-size: 3em;
+            text-shadow: 3px 3px 6px rgba(0,0,0,0.3);
+            margin-bottom: 10px;
+        }
+
+        .pizza-emoji {
+            font-size: 4em;
+            display: inline-block;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+
+        .stats-panel {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+        }
+
+        .money-display {
+            font-size: 2.5em;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .per-second {
+            font-size: 1.2em;
+            text-align: center;
+            opacity: 0.9;
+        }
+
+        .make-pizza-btn {
+            display: block;
+            width: 200px;
+            height: 200px;
+            margin: 30px auto;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            border: none;
+            border-radius: 50%;
+            font-size: 4em;
+            cursor: pointer;
+            transition: transform 0.1s, box-shadow 0.3s;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        .make-pizza-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.4);
+        }
+
+        .make-pizza-btn:active {
+            transform: scale(0.95);
+        }
+
+        .upgrades-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .save-panel {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            text-align: center;
+        }
+
+        .save-btn {
+            padding: 12px 30px;
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            border: none;
+            border-radius: 10px;
+            color: white;
+            font-size: 1em;
+            font-weight: bold;
+            cursor: pointer;
+            margin: 0 10px;
+            transition: transform 0.1s;
+        }
+
+        .save-btn:hover {
+            transform: scale(1.05);
+        }
+
+        .save-message {
+            margin-top: 10px;
+            font-size: 0.9em;
+            opacity: 0.8;
+        }
+
+        .settings-btn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            width: 60px;
+            height: 60px;
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            font-size: 1.8em;
+            cursor: pointer;
+            transition: transform 0.2s, background 0.2s;
+            z-index: 1000;
+        }
+
+        .settings-btn:hover {
+            transform: scale(1.1);
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .settings-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .settings-modal.active {
+            display: flex;
+        }
+
+        .settings-content {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+        }
+
+        .settings-content h2 {
+            margin-bottom: 30px;
+            font-size: 2em;
+            text-align: center;
+        }
+
+        .setting-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+
+        .setting-label {
+            font-size: 1.1em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .toggle-switch {
+            position: relative;
+            width: 60px;
+            height: 30px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 15px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .toggle-switch.active {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+
+        .toggle-slider {
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            width: 24px;
+            height: 24px;
+            background: white;
+            border-radius: 50%;
+            transition: transform 0.3s;
+        }
+
+        .toggle-switch.active .toggle-slider {
+            transform: translateX(30px);
+        }
+
+        .close-settings-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            border: none;
+            border-radius: 10px;
+            color: white;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: transform 0.2s;
+        }
+
+        .close-settings-btn:hover {
+            transform: scale(1.02);
+        }
+
+        .volume-control {
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        .volume-slider {
+            width: 100%;
+            height: 8px;
+            border-radius: 5px;
+            background: rgba(255, 255, 255, 0.2);
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        .volume-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            cursor: pointer;
+        }
+
+        .volume-slider::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            cursor: pointer;
+            border: none;
+        }
+
+        .upgrade-card {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .upgrade-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 40px 0 rgba(31, 38, 135, 0.5);
+        }
+
+        .upgrade-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .upgrade-icon {
+            font-size: 2.5em;
+            margin-right: 15px;
+        }
+
+        .upgrade-info h3 {
+            font-size: 1.3em;
+            margin-bottom: 5px;
+        }
+
+        .upgrade-count {
+            font-size: 0.9em;
+            opacity: 0.8;
+        }
+
+        .upgrade-description {
+            margin-bottom: 15px;
+            opacity: 0.9;
+            font-size: 0.95em;
+        }
+
+        .upgrade-btn {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            border: none;
+            border-radius: 10px;
+            color: white;
+            font-size: 1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: opacity 0.2s, transform 0.1s;
+        }
+
+        .upgrade-btn:hover:not(:disabled) {
+            transform: scale(1.02);
+        }
+
+        .upgrade-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .production-display {
+            margin-top: 10px;
+            font-size: 0.9em;
+            opacity: 0.8;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        .money-gain {
+            position: fixed;
+            font-size: 1.5em;
+            font-weight: bold;
+            pointer-events: none;
+            animation: floatUp 1s ease-out forwards;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+
+        @keyframes floatUp {
+            to {
+                transform: translateY(-100px);
+                opacity: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <button class="settings-btn" id="settingsBtn">⚙️</button>
+
+    <div class="settings-modal" id="settingsModal">
+        <div class="settings-content">
+            <h2>⚙️ Settings</h2>
+            <div class="setting-item">
+                <div class="setting-label">
+                    <span>🎵</span>
+                    <span>Background Music</span>
+                </div>
+                <div class="toggle-switch active" id="musicToggle">
+                    <div class="toggle-slider"></div>
+                </div>
+            </div>
+            <div class="setting-item">
+                <div class="setting-label">
+                    <span>🔊</span>
+                    <span>Sound Effects</span>
+                </div>
+                <div class="toggle-switch active" id="sfxToggle">
+                    <div class="toggle-slider"></div>
+                </div>
+            </div>
+            <div class="setting-item">
+                <div class="setting-label">
+                    <span>🎚️</span>
+                    <span>Music Volume</span>
+                </div>
+            </div>
+            <div class="volume-control">
+                <input type="range" min="0" max="100" value="30" class="volume-slider" id="musicVolume">
+            </div>
+            <button class="close-settings-btn" id="closeSettings">Close</button>
+        </div>
+    </div>
+
+    <div class="container">
+        <header>
+            <div class="pizza-emoji">🍕</div>
+            <h1>Pizza Clicker</h1>
+            <h2>By: Hyper</h2>
+        </header>
+
+        <div class="save-panel">
+            <button class="save-btn" id="saveBtn">💾 Save Game</button>
+            <button class="save-btn" id="resetBtn">🔄 Reset Game</button>
+            <div class="save-message" id="saveMessage"></div>
+        </div>
+
+        <div class="stats-panel">
+            <div class="money-display">$<span id="money">0</span></div>
+            <div class="per-second">💰 $<span id="perSecond">0</span>/sec</div>
+            <button class="make-pizza-btn" id="makePizzaBtn">🍕</button>
+        </div>
+
+        <div class="upgrades-container" id="upgradesContainer"></div>
+    </div>
+
+    <script>
+        // Audio setup
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        let backgroundMusic = null;
+        let musicEnabled = true;
+        let sfxEnabled = true;
+        let musicVolume = 0.3;
+        let currentTrack = 0;
+
+        // Lofi beat patterns - multiple tracks
+        const lofiTracks = [
+            {
+                name: "Chill Vibes",
+                chords: [
+                    [261.63, 329.63, 392.00], [293.66, 369.99, 440.00], 
+                    [246.94, 329.63, 369.99], [220.00, 277.18, 329.63],
+                    [261.63, 329.63, 392.00], [246.94, 311.13, 369.99],
+                    [220.00, 277.18, 329.63], [293.66, 369.99, 440.00]
+                ],
+                tempo: 2000,
+                bass: [130.81, 146.83, 123.47, 110.00, 130.81, 123.47, 110.00, 146.83],
+                drumPattern: [1, 0, 1, 0, 1, 0, 1, 0],
+                bpm: 80,
+                melody: [523.25, 587.33, 659.25, 698.46, 587.33, 523.25, 440.00, 493.88, 523.25, 587.33, 659.25, 587.33, 523.25, 392.00, 440.00, 523.25],
+                leadType: 'warm', // Warm, smooth lead
+                bassStyle: 'punchy'
+            },
+            {
+                name: "Midnight Study",
+                chords: [
+                    [220.00, 277.18, 329.63], [196.00, 246.94, 293.66], 
+                    [174.61, 220.00, 261.63], [196.00, 246.94, 293.66],
+                    [220.00, 277.18, 329.63], [164.81, 207.65, 246.94],
+                    [174.61, 220.00, 261.63], [220.00, 277.18, 329.63]
+                ],
+                tempo: 2200,
+                bass: [110.00, 98.00, 87.31, 98.00, 110.00, 82.41, 87.31, 110.00],
+                drumPattern: [1, 0, 1, 1, 0, 1, 0, 1],
+                bpm: 75,
+                melody: [440.00, 392.00, 349.23, 329.63, 349.23, 392.00, 440.00, 493.88, 440.00, 392.00, 349.23, 293.66, 329.63, 349.23, 392.00, 440.00],
+                leadType: 'mellow', // Softer, more ambient
+                bassStyle: 'deep'
+            },
+            {
+                name: "Coffee Shop",
+                chords: [
+                    [293.66, 369.99, 440.00], [261.63, 329.63, 392.00], 
+                    [246.94, 311.13, 369.99], [220.00, 277.18, 329.63],
+                    [293.66, 369.99, 440.00], [329.63, 415.30, 493.88],
+                    [261.63, 329.63, 392.00], [246.94, 311.13, 369.99]
+                ],
+                tempo: 1900,
+                bass: [146.83, 130.81, 123.47, 110.00, 146.83, 164.81, 130.81, 123.47],
+                drumPattern: [1, 0, 1, 0, 1, 1, 0, 1],
+                bpm: 85,
+                melody: [587.33, 659.25, 698.46, 783.99, 698.46, 659.25, 587.33, 523.25, 587.33, 659.25, 783.99, 880.00, 783.99, 698.46, 659.25, 587.33],
+                leadType: 'bright', // Brighter, more energetic
+                bassStyle: 'groovy'
+            },
+            {
+                name: "Rainy Day",
+                chords: [
+                    [174.61, 220.00, 261.63], [196.00, 246.94, 293.66], 
+                    [164.81, 207.65, 246.94], [220.00, 277.18, 329.63],
+                    [174.61, 220.00, 261.63], [146.94, 185.00, 220.00],
+                    [164.81, 207.65, 246.94], [196.00, 246.94, 293.66]
+                ],
+                tempo: 2400,
+                bass: [87.31, 98.00, 82.41, 110.00, 87.31, 73.42, 82.41, 98.00],
+                drumPattern: [1, 0, 0, 1, 0, 1, 0, 1],
+                bpm: 70,
+                melody: [349.23, 329.63, 293.66, 261.63, 293.66, 329.63, 349.23, 392.00, 349.23, 329.63, 293.66, 329.63, 349.23, 392.00, 440.00, 392.00],
+                leadType: 'dreamy', // Atmospheric and ethereal
+                bassStyle: 'deep'
+            },
+            {
+                name: "Sunset Drive",
+                chords: [
+                    [246.94, 311.13, 369.99], [220.00, 277.18, 329.63], 
+                    [261.63, 329.63, 392.00], [293.66, 369.99, 440.00],
+                    [246.94, 311.13, 369.99], [196.00, 246.94, 293.66],
+                    [261.63, 329.63, 392.00], [220.00, 277.18, 329.63]
+                ],
+                tempo: 1850,
+                bass: [123.47, 110.00, 130.81, 146.83, 123.47, 98.00, 130.81, 110.00],
+                drumPattern: [1, 0, 1, 0, 1, 0, 1, 1],
+                bpm: 82,
+                melody: [493.88, 523.25, 587.33, 659.25, 587.33, 523.25, 493.88, 440.00, 493.88, 523.25, 587.33, 659.25, 698.46, 659.25, 587.33, 523.25],
+                leadType: 'classic', // Classic lofi sound
+                bassStyle: 'punchy'
+            }
+        ];
+
+        // Drum sounds using noise and filters
+        function playKick(time, masterGain) {
+            const osc = audioContext.createOscillator();
+            const oscGain = audioContext.createGain();
+            
+            osc.frequency.setValueAtTime(150, time);
+            osc.frequency.exponentialRampToValueAtTime(0.01, time + 0.5);
+            
+            oscGain.gain.setValueAtTime(0.2, time);
+            oscGain.gain.exponentialRampToValueAtTime(0.01, time + 0.5);
+            
+            osc.connect(oscGain);
+            oscGain.connect(masterGain);
+            
+            osc.start(time);
+            osc.stop(time + 0.5);
+        }
+
+        function playSnare(time, masterGain) {
+            const noiseBuffer = audioContext.createBuffer(1, audioContext.sampleRate * 0.2, audioContext.sampleRate);
+            const data = noiseBuffer.getChannelData(0);
+            for (let i = 0; i < data.length; i++) {
+                data[i] = Math.random() * 2 - 1;
+            }
+            
+            const noise = audioContext.createBufferSource();
+            noise.buffer = noiseBuffer;
+            
+            const noiseFilter = audioContext.createBiquadFilter();
+            noiseFilter.type = 'highpass';
+            noiseFilter.frequency.value = 1000;
+            
+            const noiseGain = audioContext.createGain();
+            noiseGain.gain.setValueAtTime(0.15, time);
+            noiseGain.gain.exponentialRampToValueAtTime(0.01, time + 0.2);
+            
+            noise.connect(noiseFilter);
+            noiseFilter.connect(noiseGain);
+            noiseGain.connect(masterGain);
+            
+            noise.start(time);
+            noise.stop(time + 0.2);
+        }
+
+        function playHiHat(time, masterGain) {
+            const noiseBuffer = audioContext.createBuffer(1, audioContext.sampleRate * 0.05, audioContext.sampleRate);
+            const data = noiseBuffer.getChannelData(0);
+            for (let i = 0; i < data.length; i++) {
+                data[i] = Math.random() * 2 - 1;
+            }
+            
+            const noise = audioContext.createBufferSource();
+            noise.buffer = noiseBuffer;
+            
+            const noiseFilter = audioContext.createBiquadFilter();
+            noiseFilter.type = 'highpass';
+            noiseFilter.frequency.value = 7000;
+            
+            const noiseGain = audioContext.createGain();
+            noiseGain.gain.setValueAtTime(0.08, time);
+            noiseGain.gain.exponentialRampToValueAtTime(0.01, time + 0.05);
+            
+            noise.connect(noiseFilter);
+            noiseFilter.connect(noiseGain);
+            noiseGain.connect(masterGain);
+            
+            noise.start(time);
+            noise.stop(time + 0.05);
+        }
+
+        function playRimshot(time, masterGain) {
+            const noiseBuffer = audioContext.createBuffer(1, audioContext.sampleRate * 0.1, audioContext.sampleRate);
+            const data = noiseBuffer.getChannelData(0);
+            for (let i = 0; i < data.length; i++) {
+                data[i] = Math.random() * 2 - 1;
+            }
+            
+            const noise = audioContext.createBufferSource();
+            noise.buffer = noiseBuffer;
+            
+            const noiseFilter = audioContext.createBiquadFilter();
+            noiseFilter.type = 'bandpass';
+            noiseFilter.frequency.value = 3000;
+            
+            const noiseGain = audioContext.createGain();
+            noiseGain.gain.setValueAtTime(0.1, time);
+            noiseGain.gain.exponentialRampToValueAtTime(0.01, time + 0.1);
+            
+            noise.connect(noiseFilter);
+            noiseFilter.connect(noiseGain);
+            noiseGain.connect(masterGain);
+            
+            noise.start(time);
+            noise.stop(time + 0.1);
+        }
+
+        // Create lofi background music using Web Audio API
+        function createLofiMusic() {
+            if (backgroundMusic) {
+                stopMusic();
+            }
+            
+            const masterGain = audioContext.createGain();
+            masterGain.gain.value = musicVolume;
+            masterGain.connect(audioContext.destination);
+
+            const track = lofiTracks[currentTrack];
+            let chordIndex = 0;
+            let drumBeatIndex = 0;
+            let melodyIndex = 0;
+            let isPlaying = true;
+            const beatDuration = 60000 / track.bpm; // milliseconds per beat
+
+            function playChord() {
+                if (!isPlaying) return;
+
+                const chord = track.chords[chordIndex];
+                const bassNote = track.bass[chordIndex];
+                const now = audioContext.currentTime;
+
+                // Play chord with subtle variations and added complexity
+                chord.forEach((freq, i) => {
+                    // Main chord voice
+                    const osc = audioContext.createOscillator();
+                    const gain = audioContext.createGain();
+                    const filter = audioContext.createBiquadFilter();
+                    
+                    osc.type = 'sine';
+                    osc.frequency.value = freq * (1 + (Math.random() - 0.5) * 0.002);
+                    
+                    filter.type = 'lowpass';
+                    filter.frequency.value = 2000;
+                    filter.Q.value = 1;
+                    
+                    gain.gain.setValueAtTime(0, now);
+                    gain.gain.linearRampToValueAtTime(0.04, now + 0.1);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 3);
+                    
+                    osc.connect(filter);
+                    filter.connect(gain);
+                    gain.connect(masterGain);
+                    
+                    osc.start(now);
+                    osc.stop(now + 3);
+
+                    // Add octave voice for richness
+                    if (i === 0) {
+                        const octaveOsc = audioContext.createOscillator();
+                        const octaveGain = audioContext.createGain();
+                        
+                        octaveOsc.type = 'triangle';
+                        octaveOsc.frequency.value = freq * 2;
+                        
+                        octaveGain.gain.setValueAtTime(0, now);
+                        octaveGain.gain.linearRampToValueAtTime(0.015, now + 0.1);
+                        octaveGain.gain.exponentialRampToValueAtTime(0.001, now + 3);
+                        
+                        octaveOsc.connect(octaveGain);
+                        octaveGain.connect(masterGain);
+                        
+                        octaveOsc.start(now);
+                        octaveOsc.stop(now + 3);
+                    }
+                });
+
+                // Play bass note with more character
+                const bassOsc = audioContext.createOscillator();
+                const bassOsc2 = audioContext.createOscillator();
+                const bassGain = audioContext.createGain();
+                const bassFilter = audioContext.createBiquadFilter();
+                
+                bassOsc.type = 'triangle';
+                bassOsc.frequency.value = bassNote;
+                bassOsc2.type = 'sine';
+                bassOsc2.frequency.value = bassNote * 0.5; // Sub bass
+                
+                bassFilter.type = 'lowpass';
+                bassFilter.frequency.value = 400;
+                
+                bassGain.gain.setValueAtTime(0, now);
+                bassGain.gain.linearRampToValueAtTime(0.08, now + 0.05);
+                bassGain.gain.exponentialRampToValueAtTime(0.001, now + 2);
+                
+                bassOsc.connect(bassFilter);
+                bassOsc2.connect(bassFilter);
+                bassFilter.connect(bassGain);
+                bassGain.connect(masterGain);
+                
+                bassOsc.start(now);
+                bassOsc2.start(now);
+                bassOsc.stop(now + 2);
+                bassOsc2.stop(now + 2);
+
+                chordIndex = (chordIndex + 1) % track.chords.length;
+            }
+
+            function playMelody() {
+                if (!isPlaying) return;
+
+                const now = audioContext.currentTime;
+                const melodyNote = track.melody[melodyIndex];
+
+                // Vary synth character based on track's leadType
+                const leadConfig = {
+                    warm: { osc1: 'sawtooth', osc2: 'triangle', filterBase: 600, filterPeak: 1200, gain: 0.025, q: 2 },
+                    mellow: { osc1: 'sine', osc2: 'triangle', filterBase: 400, filterPeak: 800, gain: 0.02, q: 1 },
+                    bright: { osc1: 'square', osc2: 'sawtooth', filterBase: 800, filterPeak: 1800, gain: 0.028, q: 3 },
+                    dreamy: { osc1: 'sine', osc2: 'sine', filterBase: 500, filterPeak: 1000, gain: 0.018, q: 1.5 },
+                    classic: { osc1: 'sawtooth', osc2: 'square', filterBase: 650, filterPeak: 1400, gain: 0.025, q: 2.5 }
+                };
+
+                const config = leadConfig[track.leadType] || leadConfig.classic;
+
+                // Create lofi character with different timbres per track
+                const osc = audioContext.createOscillator();
+                const osc2 = audioContext.createOscillator();
+                const osc3 = audioContext.createOscillator();
+                const gain = audioContext.createGain();
+                const filter = audioContext.createBiquadFilter();
+                const filter2 = audioContext.createBiquadFilter();
+                
+                // Varied oscillator setup per track
+                osc.type = config.osc1;
+                osc.frequency.value = melodyNote * (1 - Math.random() * 0.003);
+                osc2.type = config.osc2;
+                osc2.frequency.value = melodyNote * (1 + Math.random() * 0.003);
+                osc3.type = 'triangle';
+                osc3.frequency.value = melodyNote * 0.5;
+                
+                // Track-specific filter settings
+                filter.type = 'lowpass';
+                filter.frequency.setValueAtTime(config.filterBase, now);
+                filter.frequency.exponentialRampToValueAtTime(config.filterPeak, now + 0.2);
+                filter.frequency.exponentialRampToValueAtTime(config.filterBase * 0.8, now + 0.8);
+                filter.Q.value = config.q;
+                
+                filter2.type = 'highpass';
+                filter2.frequency.value = track.leadType === 'dreamy' ? 150 : 100;
+                
+                // Track-specific envelope
+                const attackTime = track.leadType === 'bright' ? 0.02 : 0.05;
+                const sustainLevel = config.gain;
+                
+                gain.gain.setValueAtTime(0, now);
+                gain.gain.linearRampToValueAtTime(sustainLevel, now + attackTime);
+                gain.gain.linearRampToValueAtTime(sustainLevel * 0.8, now + 0.4);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 1.2);
+                
+                osc.connect(filter);
+                osc2.connect(filter);
+                osc3.connect(filter);
+                filter.connect(filter2);
+                filter2.connect(gain);
+                gain.connect(masterGain);
+                
+                osc.start(now);
+                osc2.start(now);
+                osc3.start(now);
+                osc.stop(now + 1.2);
+                osc2.stop(now + 1.2);
+                osc3.stop(now + 1.2);
+
+                // Varied crackle intensity per track
+                const crackleChance = track.leadType === 'dreamy' ? 0.5 : 0.7;
+                if (Math.random() > crackleChance) {
+                    const crackleBuffer = audioContext.createBuffer(1, audioContext.sampleRate * 0.02, audioContext.sampleRate);
+                    const crackleData = crackleBuffer.getChannelData(0);
+                    for (let j = 0; j < crackleData.length; j++) {
+                        crackleData[j] = (Math.random() * 2 - 1) * 0.02;
+                    }
+                    
+                    const crackle = audioContext.createBufferSource();
+                    crackle.buffer = crackleBuffer;
+                    
+                    const crackleGain = audioContext.createGain();
+                    crackleGain.gain.value = 0.008;
+                    
+                    crackle.connect(crackleGain);
+                    crackleGain.connect(masterGain);
+                    
+                    crackle.start(now);
+                }
+
+                melodyIndex = (melodyIndex + 1) % track.melody.length;
+                
+                // Play melody every beat for more complexity
+                setTimeout(() => {
+                    if (isPlaying) playMelody();
+                }, beatDuration);
+            }
+
+            function playDrumBeat() {
+                if (!isPlaying) return;
+
+                const now = audioContext.currentTime;
+                
+                // Hi-hat on every beat
+                playHiHat(now, masterGain);
+                
+                // Kick and snare based on pattern
+                if (drumBeatIndex % 2 === 0) {
+                    playKick(now, masterGain);
+                } else if (track.drumPattern[drumBeatIndex] === 1) {
+                    playSnare(now, masterGain);
+                }
+
+                // Add occasional rimshot for variation
+                if (drumBeatIndex === 7 && Math.random() > 0.5) {
+                    playRimshot(now, masterGain);
+                }
+
+                drumBeatIndex = (drumBeatIndex + 1) % 8;
+                
+                // Schedule next drum beat
+                setTimeout(playDrumBeat, beatDuration);
+            }
+
+            function startChordLoop() {
+                if (!isPlaying) return;
+                playChord();
+                setTimeout(startChordLoop, beatDuration * 4); // 4 beats per chord
+            }
+
+            backgroundMusic = { 
+                masterGain, 
+                stop: () => { isPlaying = false; }
+            };
+            
+            startChordLoop();
+            playDrumBeat(); // Start drum loop separately
+            playMelody(); // Start melody loop
+
+            // Fade out after 85 seconds (giving 5 seconds for fade), then switch track
+            setTimeout(() => {
+                if (musicEnabled && backgroundMusic) {
+                    // Fade out over 5 seconds
+                    const fadeStart = audioContext.currentTime;
+                    masterGain.gain.setValueAtTime(musicVolume, fadeStart);
+                    masterGain.gain.linearRampToValueAtTime(0.001, fadeStart + 5);
+                    
+                    // 5 seconds of silence after fade completes, then switch track
+                    setTimeout(() => {
+                        if (musicEnabled) {
+                            currentTrack = (currentTrack + 1) % lofiTracks.length;
+                            createLofiMusic();
+                        }
+                    }, 10000); // 5 second fade + 5 second silence
+                }
+            }, 85000); // Play for 85 seconds before starting fade (~1.5 minutes total)
+        }
+
+        function stopMusic() {
+            if (backgroundMusic) {
+                backgroundMusic.stop();
+                backgroundMusic = null;
+            }
+        }
+
+        // Purchase sound effect
+        function playPurchaseSound() {
+            if (!sfxEnabled) return;
+
+            const osc = audioContext.createOscillator();
+            const gain = audioContext.createGain();
+            
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(523.25, audioContext.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(783.99, audioContext.currentTime + 0.1);
+            
+            gain.gain.setValueAtTime(0.3, audioContext.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2);
+            
+            osc.connect(gain);
+            gain.connect(audioContext.destination);
+            
+            osc.start(audioContext.currentTime);
+            osc.stop(audioContext.currentTime + 0.2);
+        }
+
+        // Click sound effect
+        function playClickSound() {
+            if (!sfxEnabled) return;
+
+            const osc = audioContext.createOscillator();
+            const gain = audioContext.createGain();
+            
+            osc.type = 'sine';
+            osc.frequency.value = 800;
+            
+            gain.gain.setValueAtTime(0.1, audioContext.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.05);
+            
+            osc.connect(gain);
+            gain.connect(audioContext.destination);
+            
+            osc.start(audioContext.currentTime);
+            osc.stop(audioContext.currentTime + 0.05);
+        }
+
+        const game = {
+            money: 0,
+            moneyPerClick: 1,
+            moneyPerSecond: 0,
+            upgrades: [
+                { id: 'cursor', name: 'Pizza Cursor', icon: '👆', description: 'Click faster with better technique', baseCost: 10, baseProduction: 0.1, count: 0 },
+                { id: 'chef', name: 'Junior Chef', icon: '👨‍🍳', description: 'A skilled chef to make pizzas automatically', baseCost: 15, baseProduction: 0.5, count: 0 },
+                { id: 'doughBall', name: 'Dough Ball', icon: '⚪', description: 'Pre-made dough saves time', baseCost: 25, baseProduction: 0.8, count: 0 },
+                { id: 'rollingPin', name: 'Rolling Pin', icon: '🎯', description: 'Perfectly flat dough every time', baseCost: 50, baseProduction: 1.5, count: 0 },
+                { id: 'oven', name: 'Pizza Oven', icon: '🔥', description: 'A better oven to cook pizzas faster', baseCost: 100, baseProduction: 3, count: 0 },
+                { id: 'sauce', name: 'Secret Sauce', icon: '🥫', description: 'A special recipe that customers love', baseCost: 200, baseProduction: 5, count: 0 },
+                { id: 'cheese', name: 'Premium Cheese', icon: '🧀', description: 'The finest mozzarella money can buy', baseCost: 350, baseProduction: 8, count: 0 },
+                { id: 'deliveryDriver', name: 'Delivery Driver', icon: '🛵', description: 'Fast delivery means more orders', baseCost: 500, baseProduction: 12, count: 0 },
+                { id: 'pepperoni', name: 'Pepperoni Supplier', icon: '🍖', description: 'Never run out of toppings', baseCost: 750, baseProduction: 18, count: 0 },
+                { id: 'mixer', name: 'Industrial Mixer', icon: '🌀', description: 'Mix dough faster and more efficiently', baseCost: 1200, baseProduction: 28, count: 0 },
+                { id: 'pizzaCutter', name: 'Pizza Cutter', icon: '⭕', description: 'Perfect slices every time', baseCost: 1800, baseProduction: 40, count: 0 },
+                { id: 'seniorChef', name: 'Senior Chef', icon: '👨‍🍳', description: 'Years of experience in every pizza', baseCost: 2500, baseProduction: 60, count: 0 },
+                { id: 'restaurant', name: 'Small Restaurant', icon: '🏪', description: 'A cozy place for dine-in customers', baseCost: 3500, baseProduction: 85, count: 0 },
+                { id: 'cashier', name: 'Cashier', icon: '💵', description: 'Someone to handle the money', baseCost: 5000, baseProduction: 120, count: 0 },
+                { id: 'sousChef', name: 'Sous Chef', icon: '👩‍🍳', description: 'Expert assistant chef for quality control', baseCost: 7500, baseProduction: 170, count: 0 },
+                { id: 'convectionOven', name: 'Convection Oven', icon: '🔥', description: 'Even heat distribution for perfect pizzas', baseCost: 10000, baseProduction: 240, count: 0 },
+                { id: 'franchise', name: 'Franchise Location', icon: '🏢', description: 'Open a new location across town', baseCost: 15000, baseProduction: 350, count: 0 },
+                { id: 'deliveryFleet', name: 'Delivery Fleet', icon: '🚗', description: 'Multiple drivers delivering at once', baseCost: 20000, baseProduction: 500, count: 0 },
+                { id: 'marketingTeam', name: 'Marketing Team', icon: '📢', description: 'Spread the word and attract customers', baseCost: 30000, baseProduction: 700, count: 0 },
+                { id: 'organicIngredients', name: 'Organic Ingredients', icon: '🌿', description: 'Premium organic toppings', baseCost: 42000, baseProduction: 1000, count: 0 },
+                { id: 'pizzaBot', name: 'Pizza Bot', icon: '🤖', description: 'Automated pizza assembly', baseCost: 58000, baseProduction: 1400, count: 0 },
+                { id: 'factory', name: 'Pizza Factory', icon: '🏭', description: 'Mass produce pizzas with efficiency', baseCost: 75000, baseProduction: 2000, count: 0 },
+                { id: 'warehouse', name: 'Warehouse', icon: '📦', description: 'Store ingredients in bulk', baseCost: 100000, baseProduction: 2800, count: 0 },
+                { id: 'qualityControl', name: 'Quality Control', icon: '✅', description: 'Every pizza is perfect', baseCost: 130000, baseProduction: 3900, count: 0 },
+                { id: 'foodTruck', name: 'Food Truck Fleet', icon: '🚚', description: 'Mobile pizza operations everywhere', baseCost: 170000, baseProduction: 5500, count: 0 },
+                { id: 'droneDelivery', name: 'Drone Delivery', icon: '🚁', description: 'Pizzas from the sky', baseCost: 220000, baseProduction: 7700, count: 0 },
+                { id: 'pizzaSchool', name: 'Pizza School', icon: '🎓', description: 'Train the next generation of chefs', baseCost: 280000, baseProduction: 10800, count: 0 },
+                { id: 'megaRestaurant', name: 'Mega Restaurant', icon: '🏰', description: 'A massive dining destination', baseCost: 360000, baseProduction: 15000, count: 0 },
+                { id: 'celebrity', name: 'Celebrity Chef', icon: '⭐', description: 'A famous chef brings prestige', baseCost: 500000, baseProduction: 21000, count: 0 },
+                { id: 'bookDeal', name: 'Cookbook Deal', icon: '📖', description: 'Share your recipes with the world', baseCost: 650000, baseProduction: 29000, count: 0 },
+                { id: 'tvShow', name: 'TV Cooking Show', icon: '📺', description: 'Your own pizza cooking show', baseCost: 850000, baseProduction: 40000, count: 0 },
+                { id: 'pizzaMerch', name: 'Pizza Merchandise', icon: '👕', description: 'Sell branded pizza gear', baseCost: 1100000, baseProduction: 56000, count: 0 },
+                { id: 'internationalFranchise', name: 'International Franchise', icon: '🌍', description: 'Expand globally', baseCost: 1400000, baseProduction: 78000, count: 0 },
+                { id: 'michelinStar', name: 'Michelin Star', icon: '🌟', description: 'Prestigious culinary recognition', baseCost: 1850000, baseProduction: 109000, count: 0 },
+                { id: 'researchLab', name: 'Research Lab', icon: '🔬', description: 'Develop revolutionary pizza science', baseCost: 2400000, baseProduction: 152000, count: 0 },
+                { id: 'aiChef', name: 'AI Chef System', icon: '🤖', description: 'Machine learning perfects recipes', baseCost: 3200000, baseProduction: 213000, count: 0 },
+                { id: 'pizzaThemePark', name: 'Pizza Theme Park', icon: '🎡', description: 'An entire park dedicated to pizza', baseCost: 4200000, baseProduction: 298000, count: 0 },
+                { id: 'empire', name: 'Pizza Empire', icon: '👑', description: 'Rule the pizza industry', baseCost: 5500000, baseProduction: 417000, count: 0 },
+                { id: 'pizzaUniversity', name: 'Pizza University', icon: '🏫', description: 'Advanced culinary education', baseCost: 7200000, baseProduction: 584000, count: 0 },
+                { id: 'pizzaCoin', name: 'Pizza Cryptocurrency', icon: '💎', description: 'Launch your own crypto', baseCost: 9500000, baseProduction: 818000, count: 0 },
+                { id: 'quantumOven', name: 'Quantum Oven', icon: '⚛️', description: 'Cook pizzas at the quantum level', baseCost: 12500000, baseProduction: 1145000, count: 0 },
+                { id: 'pizzaSatellite', name: 'Pizza Satellite', icon: '🛰️', description: 'Monitor global pizza demand from space', baseCost: 16500000, baseProduction: 1603000, count: 0 },
+                { id: 'pizzaCity', name: 'Pizza City', icon: '🌆', description: 'An entire city devoted to pizza', baseCost: 21500000, baseProduction: 2244000, count: 0 },
+                { id: 'cloneArmy', name: 'Clone Army', icon: '👥', description: 'Clones of your best chefs', baseCost: 28000000, baseProduction: 3142000, count: 0 },
+                { id: 'pizzaRocket', name: 'Pizza Rocket', icon: '🚀', description: 'Launch pizzas to space stations', baseCost: 37000000, baseProduction: 4399000, count: 0 },
+                { id: 'spaceStation', name: 'Space Pizza Station', icon: '🛸', description: 'Pizza production in orbit', baseCost: 49000000, baseProduction: 6159000, count: 0 },
+                { id: 'alienChef', name: 'Alien Chef', icon: '👽', description: 'Extraterrestrial pizza expertise', baseCost: 65000000, baseProduction: 8623000, count: 0 },
+                { id: 'pizzaPlanet', name: 'Pizza Planet', icon: '🪐', description: 'An entire planet of pizza production', baseCost: 85000000, baseProduction: 12072000, count: 0 },
+                { id: 'wormhole', name: 'Wormhole Network', icon: '🌀', description: 'Instant delivery across the galaxy', baseCost: 110000000, baseProduction: 16901000, count: 0 },
+                { id: 'timeMachine', name: 'Time Machine', icon: '⏰', description: 'Deliver pizzas before they\'re ordered', baseCost: 145000000, baseProduction: 23661000, count: 0 },
+                { id: 'pizzaGod', name: 'Pizza Deity', icon: '✨', description: 'Ascend to pizza godhood', baseCost: 190000000, baseProduction: 33125000, count: 0 },
+                { id: 'dimensionalRift', name: 'Dimensional Rift', icon: '🌈', description: 'Access parallel pizza universes', baseCost: 250000000, baseProduction: 46375000, count: 0 },
+                { id: 'pizzaMatrix', name: 'Pizza Matrix', icon: '💻', description: 'Simulate infinite pizza realities', baseCost: 330000000, baseProduction: 64925000, count: 0 },
+                { id: 'cosmicOven', name: 'Cosmic Oven', icon: '🌌', description: 'Harness the power of stars', baseCost: 430000000, baseProduction: 90895000, count: 0 },
+                { id: 'pizzaPantheon', name: 'Pizza Pantheon', icon: '⛩️', description: 'A temple to the pizza gods', baseCost: 560000000, baseProduction: 127253000, count: 0 },
+                { id: 'multiverse', name: 'Multiverse Pizza', icon: '∞', description: 'Pizza across infinite realities', baseCost: 730000000, baseProduction: 178154000, count: 0 },
+                { id: 'bigBang', name: 'Big Bang Pizza', icon: '💥', description: 'Create universes made of pizza', baseCost: 950000000, baseProduction: 249416000, count: 0 },
+                { id: 'omnipotence', name: 'Pizza Omnipotence', icon: '🔱', description: 'Unlimited cosmic pizza power', baseCost: 1250000000, baseProduction: 349182000, count: 0 },
+                { id: 'eternity', name: 'Eternal Pizza', icon: '♾️', description: 'Pizza that transcends time itself', baseCost: 1650000000, baseProduction: 488855000, count: 0 },
+                { id: 'singularity', name: 'Pizza Singularity', icon: '⚫', description: 'The ultimate pizza convergence', baseCost: 2150000000, baseProduction: 684397000, count: 0 },
+                { id: 'hyperOven', name: 'Hyper Oven', icon: '🔆', description: 'Faster than light cooking', baseCost: 2800000000, baseProduction: 958156000, count: 0 },
+                { id: 'pizzaArchitect', name: 'Pizza Architect', icon: '📐', description: 'Design perfect pizza structures', baseCost: 3650000000, baseProduction: 1341418000, count: 0 },
+                { id: 'nanoBots', name: 'Nano Pizza Bots', icon: '🦠', description: 'Microscopic pizza assembly', baseCost: 4750000000, baseProduction: 1877985000, count: 0 },
+                { id: 'darkMatter', name: 'Dark Matter Dough', icon: '🌑', description: 'Harness dark energy for cooking', baseCost: 6200000000, baseProduction: 2629179000, count: 0 },
+                { id: 'pizzaOracle', name: 'Pizza Oracle', icon: '🔮', description: 'Predict customer desires perfectly', baseCost: 8100000000, baseProduction: 3680851000, count: 0 },
+                { id: 'antimatter', name: 'Antimatter Oven', icon: '⚡', description: 'Matter-antimatter pizza reactions', baseCost: 10500000000, baseProduction: 5153191000, count: 0 },
+                { id: 'pizzaPhoenix', name: 'Pizza Phoenix', icon: '🔥', description: 'Rebirth through pizza flames', baseCost: 13700000000, baseProduction: 7214467000, count: 0 },
+                { id: 'cryoPizza', name: 'Cryo Pizza Lab', icon: '❄️', description: 'Preserve pizzas in frozen time', baseCost: 17800000000, baseProduction: 10100254000, count: 0 },
+                { id: 'pizzaDragon', name: 'Pizza Dragon', icon: '🐉', description: 'Mythical creature of pizza lore', baseCost: 23200000000, baseProduction: 14140356000, count: 0 },
+                { id: 'tesseract', name: 'Pizza Tesseract', icon: '🎲', description: 'Fourth dimensional pizza storage', baseCost: 30200000000, baseProduction: 19796498000, count: 0 },
+                { id: 'pizzaKraken', name: 'Pizza Kraken', icon: '🐙', description: 'Deep sea pizza production', baseCost: 39300000000, baseProduction: 27715097000, count: 0 },
+                { id: 'blackHole', name: 'Black Hole Oven', icon: '⚫', description: 'Cook pizzas in extreme gravity', baseCost: 51100000000, baseProduction: 38801136000, count: 0 },
+                { id: 'pizzaValkyrie', name: 'Pizza Valkyrie', icon: '⚔️', description: 'Warrior spirits of pizza', baseCost: 66500000000, baseProduction: 54321590000, count: 0 },
+                { id: 'cosmicDust', name: 'Cosmic Dust Seasoning', icon: '✨', description: 'Season with stardust', baseCost: 86500000000, baseProduction: 76050226000, count: 0 },
+                { id: 'pizzaColossus', name: 'Pizza Colossus', icon: '🗿', description: 'Giant stone pizza guardian', baseCost: 112500000000, baseProduction: 106470316000, count: 0 },
+                { id: 'astralPlane', name: 'Astral Pizza Plane', icon: '🌠', description: 'Transcend physical reality', baseCost: 146000000000, baseProduction: 149058442000, count: 0 },
+                { id: 'pizzaSphinx', name: 'Pizza Sphinx', icon: '🦁', description: 'Ancient pizza riddles and power', baseCost: 190000000000, baseProduction: 208681819000, count: 0 },
+                { id: 'neutronStar', name: 'Neutron Star Core', icon: '💫', description: 'Ultra-dense pizza matter', baseCost: 247000000000, baseProduction: 292154547000, count: 0 },
+                { id: 'pizzaLeviathan', name: 'Pizza Leviathan', icon: '🐋', description: 'Colossal sea beast of dough', baseCost: 321000000000, baseProduction: 408816366000, count: 0 },
+                { id: 'voidPizza', name: 'Void Pizza', icon: '🕳️', description: 'Pizza from the emptiness', baseCost: 418000000000, baseProduction: 572342912000, count: 0 },
+                { id: 'pizzaTitan', name: 'Pizza Titan', icon: '⛰️', description: 'Primordial pizza giant', baseCost: 543000000000, baseProduction: 801280077000, count: 0 },
+                { id: 'quantumFoam', name: 'Quantum Foam Dough', icon: '🫧', description: 'Subatomic pizza substrate', baseCost: 706000000000, baseProduction: 1121792108000, count: 0 },
+                { id: 'pizzaCerberus', name: 'Pizza Cerberus', icon: '🐺', description: 'Three-headed pizza guardian', baseCost: 918000000000, baseProduction: 1570508951000, count: 0 },
+                { id: 'nebula', name: 'Pizza Nebula', icon: '🌌', description: 'Birth pizzas from cosmic gas', baseCost: 1193000000000, baseProduction: 2198712531000, count: 0 },
+                { id: 'pizzaBehemoth', name: 'Pizza Behemoth', icon: '🦏', description: 'Unstoppable pizza force', baseCost: 1551000000000, baseProduction: 3078197543000, count: 0 },
+                { id: 'eldritch', name: 'Eldritch Pizza', icon: '👁️', description: 'Pizza beyond comprehension', baseCost: 2016000000000, baseProduction: 4309476560000, count: 0 },
+                { id: 'pizzaHydra', name: 'Pizza Hydra', icon: '🐍', description: 'Multi-headed pizza beast', baseCost: 2621000000000, baseProduction: 6033267184000, count: 0 },
+                { id: 'pulsar', name: 'Pulsar Pizza Beam', icon: '📡', description: 'Rotating pizza energy waves', baseCost: 3407000000000, baseProduction: 8446573858000, count: 0 },
+                { id: 'pizzaChimera', name: 'Pizza Chimera', icon: '🦅', description: 'Hybrid pizza monster', baseCost: 4429000000000, baseProduction: 11825203401000, count: 0 },
+                { id: 'primordial', name: 'Primordial Pizza', icon: '🌋', description: 'Pizza from the dawn of time', baseCost: 5758000000000, baseProduction: 16555284761000, count: 0 },
+                { id: 'pizzaMinotaur', name: 'Pizza Minotaur', icon: '🐂', description: 'Labyrinth pizza guardian', baseCost: 7485000000000, baseProduction: 23177398665000, count: 0 },
+                { id: 'quasar', name: 'Quasar Pizza Source', icon: '🌟', description: 'Most luminous pizza in universe', baseCost: 9731000000000, baseProduction: 32448358531000, count: 0 },
+                { id: 'pizzaGriffin', name: 'Pizza Griffin', icon: '🦉', description: 'Majestic winged pizza beast', baseCost: 12650000000000, baseProduction: 45427701943000, count: 0 },
+                { id: 'planck', name: 'Planck Scale Pizza', icon: '🔬', description: 'Smallest possible pizza units', baseCost: 16445000000000, baseProduction: 63598782721000, count: 0 },
+                { id: 'pizzaBasilisk', name: 'Pizza Basilisk', icon: '🦎', description: 'Petrifying pizza gaze', baseCost: 21379000000000, baseProduction: 89038295409000, count: 0 },
+                { id: 'supernova', name: 'Supernova Pizza', icon: '💥', description: 'Explosive stellar pizza death', baseCost: 27793000000000, baseProduction: 124653613573000, count: 0 },
+                { id: 'pizzaManticore', name: 'Pizza Manticore', icon: '🦂', description: 'Scorpion-tailed pizza hunter', baseCost: 36131000000000, baseProduction: 174515059002000, count: 0 },
+                { id: 'strings', name: 'String Theory Pizza', icon: '🎻', description: 'Pizza at fundamental level', baseCost: 46970000000000, baseProduction: 244321082603000, count: 0 },
+                { id: 'pizzaWyvern', name: 'Pizza Wyvern', icon: '🦇', description: 'Aerial pizza predator', baseCost: 61061000000000, baseProduction: 341649515644000, count: 0 },
+                { id: 'membrane', name: 'M-Theory Membrane', icon: '🎭', description: 'Eleven-dimensional pizza', baseCost: 79379000000000, baseProduction: 478309121902000, count: 0 },
+                { id: 'pizzaRoc', name: 'Pizza Roc', icon: '🦜', description: 'Gigantic legendary bird', baseCost: 103193000000000, baseProduction: 669632770663000, count: 0 },
+                { id: 'higgs', name: 'Higgs Pizza Boson', icon: '⚛️', description: 'Give mass to all pizzas', baseCost: 134151000000000, baseProduction: 937485879928000, count: 0 },
+                { id: 'pizzaGolem', name: 'Pizza Golem', icon: '🪨', description: 'Animated dough construct', baseCost: 174396000000000, baseProduction: 1312480231899000, count: 0 },
+                { id: 'supersymmetry', name: 'Supersymmetric Pizza', icon: '⚖️', description: 'Perfect pizza balance', baseCost: 226715000000000, baseProduction: 1837472324659000, count: 0 },
+                { id: 'pizzaJormungandr', name: 'Pizza Jormungandr', icon: '🐍', description: 'World-encircling serpent', baseCost: 294729000000000, baseProduction: 2572461254522000, count: 0 },
+                { id: 'omega', name: 'Omega Pizza Point', icon: '🔴', description: 'The final pizza destination', baseCost: 383148000000000, baseProduction: 3601445556331000, count: 0 },
+                                { id: 'pizzaVoid', name: 'Void Pizza Reactor', icon: '🕳️', description: 'Harness the power of nothingness for infinite energy', baseCost: 498000000000000, baseProduction: 5041792779000000, count: 0 },
+                { id: 'eternalFlame', name: 'Eternal Pizza Flame', icon: '🔥', description: 'A flame that never dies, cooking forever', baseCost: 647400000000000, baseProduction: 7058510891000000, count: 0 },
+                { id: 'pizzaGenesis', name: 'Pizza Genesis Device', icon: '🌱', description: 'Create new pizza universes from scratch', baseCost: 841600000000000, baseProduction: 9881915247000000, count: 0 },
+                { id: 'omniversalOven', name: 'Omniversal Oven', icon: '🌌', description: 'Cooks across all possible realities simultaneously', baseCost: 1094000000000000, baseProduction: 13834681345800000, count: 0 },
+                { id: 'pizzaSingularityCore', name: 'Pizza Singularity Core', icon: '⚫', description: 'The heart of all pizza existence', baseCost: 1422000000000000, baseProduction: 19368553884120000, count: 0 },
+                { id: 'transcendentDough', name: 'Transcendent Dough', icon: '✨', description: 'Dough that exists beyond physical form', baseCost: 1849000000000000, baseProduction: 27115975437570000, count: 0 },
+                { id: 'infiniteToppings', name: 'Infinite Topping Dimension', icon: '🍖', description: 'Access every possible topping at once', baseCost: 2404000000000000, baseProduction: 37962365612600000, count: 0 },
+                { id: 'pizzaOvermind', name: 'Pizza Overmind', icon: '🧠', description: 'A collective consciousness of all pizzas', baseCost: 3125000000000000, baseProduction: 53147311857640000, count: 0 },
+                { id: 'causalLoopOven', name: 'Causal Loop Oven', icon: '🔄', description: 'Pizzas cook themselves in a time paradox', baseCost: 4062000000000000, baseProduction: 74406236580700000, count: 0 },
+                { id: 'absoluteZeroPizza', name: 'Absolute Zero Pizza', icon: '🧊', description: 'Frozen perfection that generates heat', baseCost: 5281000000000000, baseProduction: 104168911313000000, count: 0 },
+                { id: 'pizzaMonad', name: 'Pizza Monad', icon: '⚪', description: 'The fundamental unit of all reality is pizza', baseCost: 6865000000000000, baseProduction: 145836475838200000, count: 0 },
+                { id: 'exponentialReality', name: 'Exponential Pizza Reality', icon: '📈', description: 'Reality itself grows exponentially with pizza', baseCost: 8925000000000000, baseProduction: 204171066173500000, count: 0 },
+                { id: 'pizzaAkashic', name: 'Akashic Pizza Records', icon: '📜', description: 'Every pizza that ever was or will be', baseCost: 11602000000000000, baseProduction: 285839492642900000, count: 0 },
+                { id: 'ontologicalOven', name: 'Ontological Pizza Oven', icon: '❓', description: 'Proves pizza exists in all possible worlds', baseCost: 15083000000000000, baseProduction: 400175289700100000, count: 0 },
+                { id: 'pizzaArchetype', name: 'Perfect Pizza Archetype', icon: '🔱', description: 'The platonic ideal of pizza made manifest', baseCost: 19608000000000000, baseProduction: 560245405580200000, count: 0 },
+                { id: 'recursivePizza', name: 'Recursive Pizza Dimension', icon: '♾️', description: 'Pizzas making pizzas making pizzas...', baseCost: 25500000000000000, baseProduction: 784343567812300000, count: 0 },
+                { id: 'pizzaSource', name: 'The Source of All Pizza', icon: '🌟', description: 'The origin point from which all pizza flows', baseCost: 33150000000000000, baseProduction: 1098080994937000000, count: 0 },
+                { id: 'metaPizza', name: 'Meta-Pizza Controller', icon: '🎮', description: 'Control the game from within the game', baseCost: 43100000000000000, baseProduction: 1537313392912000000, count: 0 },
+                { id: 'pizzaFractal', name: 'Pizza Fractal Generator', icon: '🌀', description: 'Infinite pizza within finite space', baseCost: 56030000000000000, baseProduction: 2152238750077000000, count: 0 },
+                { id: 'nonEuclideanOven', name: 'Non-Euclidean Oven', icon: '🧮', description: 'Space folds to cook infinite pizzas', baseCost: 72840000000000000, baseProduction: 3013134250108000000, count: 0 },
+                { id: 'pizzaHypergrid', name: 'Pizza Hypergrid', icon: '🔗', description: 'Interconnected pizza across dimensions', baseCost: 94700000000000000, baseProduction: 4218387950152000000, count: 0 },
+                { id: 'ultimateTheorem', name: 'Ultimate Pizza Theorem', icon: '📐', description: 'Mathematically proven perfect pizza', baseCost: 123200000000000000, baseProduction: 5907745130213000000, count: 0 },
+                { id: 'pizzaConstant', name: 'Universal Pizza Constant', icon: 'π', description: 'π is actually the ratio of perfect pizza', baseCost: 160200000000000000, baseProduction: 8270843182299000000, count: 0 },
+                { id: 'sentientDough', name: 'Sentient Living Dough', icon: '🫓', description: 'Dough that bakes itself intelligently', baseCost: 208300000000000000, baseProduction: 11579184455220000000, count: 0 },
+                { id: 'pizzaSymbiosis', name: 'Human-Pizza Symbiosis', icon: '🤝', description: 'Become one with the pizza', baseCost: 270800000000000000, baseProduction: 16210818137310000000, count: 0 },
+                { id: 'postScarcity', name: 'Post-Scarcity Pizza', icon: '🆓', description: 'Pizza for all, forever, without cost', baseCost: 352000000000000000, baseProduction: 22695145392240000000, count: 0 },
+                { id: 'pizzaEnlightenment', name: 'Pizza Enlightenment', icon: '☀️', description: 'Achieve nirvana through perfect pizza', baseCost: 457600000000000000, baseProduction: 31773193549140000000, count: 0 },
+                { id: 'transPizza', name: 'Trans-Pizza Ascension', icon: '⬆️', description: 'Ascend beyond the need for pizza... wait no', baseCost: 595000000000000000, baseProduction: 44482470968800000000, count: 0 },
+                { id: 'pizzaParadox', name: 'Pizza Paradox Engine', icon: '⚖️', description: 'This pizza both exists and doesn\'t', baseCost: 773500000000000000, baseProduction: 62275459356320000000, count: 0 },
+                { id: 'finalFrontier', name: 'Final Pizza Frontier', icon: '🌠', description: 'The last upgrade... or is it?', baseCost: 1006000000000000000, baseProduction: 87185623098950000000, count: 0 },
+                { id: 'omegaPizza', name: 'Omega Pizza', icon: 'Ω', description: 'The end and beginning of all pizza', baseCost: 1308000000000000000, baseProduction: 122159684338500000000, count: 0 },
+                { id: 'alphaOmega', name: 'Alpha and Omega Pizza', icon: '⭕', description: 'First and last, eternal pizza', baseCost: 1700000000000000000, baseProduction: 171023557873900000000, count: 0 },
+                { id: 'pizzaAbsolute', name: 'Absolute Pizza', icon: '♾️', description: 'Pizza without limits or conditions', baseCost: 2210000000000000000, baseProduction: 239432980723500000000, count: 0 },
+                { id: 'trueInfinity', name: 'True Infinity Pizza', icon: '∞', description: 'Beyond countable and uncountable', baseCost: 2873000000000000000, baseProduction: 335205372012900000000, count: 0 },
+                { id: 'pizzaBeyond', name: 'Pizza Beyond Comprehension', icon: '🧿', description: 'Words fail to describe this pizza', baseCost: 3735000000000000000, baseProduction: 469287520818100000000, count: 0 },
+                { id: 'ultimateTruth', name: 'Ultimate Truth Pizza', icon: '💡', description: 'The answer to life is pizza', baseCost: 4856000000000000000, baseProduction: 656802529144500000000, count: 0 },
+                { id: 'pizzaVoidReturn', name: 'Return to Pizza Void', icon: '⚫', description: 'All pizza returns to the source', baseCost: 6313000000000000000, baseProduction: 919123740802300000000, count: 0 },
+                { id: 'eternalCycle', name: 'Eternal Pizza Cycle', icon: '🔄', description: 'The wheel of pizza turns forever', baseCost: 8207000000000000000, baseProduction: 1286573037123000000000, count: 0 },
+                { id: 'pizzaOne', name: 'The One Pizza', icon: '1️⃣', description: 'All pizzas are this pizza', baseCost: 10670000000000000000, baseProduction: 1801200251973000000000, count: 0 },
+                { id: 'pizzaZero', name: 'The Zero Pizza', icon: '0️⃣', description: 'The pizza from which all others come', baseCost: 13870000000000000000, baseProduction: 2521680352762000000000, count: 0 },
+                { id: 'pizzaAll', name: 'Pizza of All', icon: '🌐', description: 'Contains every possible pizza', baseCost: 18040000000000000000, baseProduction: 3529352493869000000000, count: 0 },
+                { id: 'pizzaNone', name: 'Pizza of None', icon: '❌', description: 'The absence that creates presence', baseCost: 23450000000000000000, baseProduction: 4941093491417000000000, count: 0 },
+                { id: 'finalPizza', name: 'The Final Pizza', icon: '🏁', description: 'There is nothing beyond this', baseCost: 30500000000000000000, baseProduction: 6917532887984000000000, count: 0 },
+                { id: 'pizzaForever', name: 'Pizza Forever', icon: '♾️', description: 'Eternal, infinite, perfect pizza', baseCost: 39650000000000000000, baseProduction: 9688546043178000000000, count: 0 },
+                { id: 'ultimateEnd', name: 'Ultimate Pizza Endgame', icon: '👑', description: 'You have achieved pizza mastery', baseCost: 51550000000000000000, baseProduction: 13563944440450000000000, count: 0 },
+                { id: 'pizzaGodhood', name: 'Pizza Godhood Achieved', icon: '🗿', description: 'You are become pizza, creator of worlds', baseCost: 67020000000000000000, baseProduction: 18989522216630000000000, count: 0 },
+                { id: 'beyondGodhood', name: 'Beyond Pizza Godhood', icon: '🌟', description: 'Even gods bow to your pizza', baseCost: 87130000000000000000, baseProduction: 26585331103280000000000, count: 0 },
+                { id: 'pizzaTranscendence', name: 'Complete Pizza Transcendence', icon: '✨', description: 'You and pizza are indistinguishable', baseCost: 113270000000000000000, baseProduction: 37219363544590000000000, count: 0 },
+                { id: 'pizzaConclusion', name: 'The Pizza Conclusion', icon: '✅', description: 'All things end in pizza', baseCost: 147250000000000000000, baseProduction: 52087108962430000000000, count: 0 },
+                { id: 'perfectLoop', name: 'Perfect Pizza Loop', icon: '⭕', description: 'The game restarts... but better', baseCost: 191400000000000000000, baseProduction: 72921972547400000000000, count: 0 },
+                { id: 'pizzaEternal', name: 'Eternal Perfect Pizza', icon: '🔯', description: 'This is the end... and the beginning', baseCost: 248800000000000000000, baseProduction: 102090961566400000000000, count: 0 },
+                { id: 'absoluteFinal', name: 'Absolute Final Pizza', icon: '🛑', description: 'No more upgrades exist', baseCost: 323400000000000000000, baseProduction: 142927345193000000000000, count: 0 },
+                { id: 'pizzaComplete', name: 'Pizza Completion', icon: '🏆', description: '100% Pizza Achieved', baseCost: 420400000000000000000, baseProduction: 200098283270200000000000, count: 0 },
+                { id: 'victoryPizza', name: 'Victory Pizza', icon: '🍾', description: 'You win at pizza', baseCost: 546500000000000000000, baseProduction: 280137596578300000000000, count: 0 },
+                { id: 'championPizza', name: 'Champion of Pizza', icon: '👑', description: 'Supreme Pizza Ruler', baseCost: 710500000000000000000, baseProduction: 392192635209700000000000, count: 0 },
+                { id: 'legendaryPizza', name: 'Legendary Pizza Status', icon: '🦸', description: 'Pizza legend forever', baseCost: 923700000000000000000, baseProduction: 548869689293600000000000, count: 0 },
+                { id: 'mythicPizza', name: 'Mythic Pizza Tier', icon: '🔥', description: 'Stories will be told of your pizza', baseCost: 1200800000000000000000, baseProduction: 768417564811000000000000, count: 0 },
+                { id: 'cosmicChampion', name: 'Cosmic Pizza Champion', icon: '🌌', description: 'Ruler of all pizza in existence', baseCost: 1561000000000000000000, baseProduction: 1075785590735000000000000, count: 0 },
+                { id: 'universalMaster', name: 'Universal Pizza Master', icon: '⭐', description: 'Mastery over all pizza realities', baseCost: 2030000000000000000000, baseProduction: 1506101827030000000000000, count: 0 },
+                { id: 'omniversalLord', name: 'Omniversal Pizza Lord', icon: '👑', description: 'Lord of every possible pizza', baseCost: 2640000000000000000000, baseProduction: 2108542557842000000000000, count: 0 },
+                { id: 'eternalVictor', name: 'Eternal Pizza Victor', icon: '🏅', description: 'Victory eternal through pizza', baseCost: 3432000000000000000000, baseProduction: 2951959570979000000000000, count: 0 },
+                { id: 'supremeBeing', name: 'Supreme Pizza Being', icon: '✨', description: 'You are the supreme pizza entity', baseCost: 4462000000000000000000, baseProduction: 4132743399371000000000000, count: 0 },
+                { id: 'pizzaApex', name: 'Pizza Apex Predator', icon: '🦈', description: 'Top of the pizza food chain', baseCost: 5800000000000000000000, baseProduction: 5785840759119000000000000, count: 0 },
+                { id: 'ultimateVictor', name: 'Ultimate Pizza Victor', icon: '⚔️', description: 'Conquered all through pizza', baseCost: 7540000000000000000000, baseProduction: 8100177072767000000000000, count: 0 },
+                { id: 'pizzaImmortal', name: 'Immortal Pizza Legacy', icon: '🕰️', description: 'Your pizza empire never falls', baseCost: 9802000000000000000000, baseProduction: 11340265891870000000000000, count: 0 },
+                { id: 'timelessPizza', name: 'Timeless Pizza Empire', icon: '⌛', description: 'Exists outside of time', baseCost: 12743000000000000000000, baseProduction: 15876352248620000000000000, count: 0 },
+                { id: 'infiniteLegacy', name: 'Infinite Pizza Legacy', icon: '🧬', description: 'Your pizza DNA spans realities', baseCost: 16566000000000000000000, baseProduction: 22226893148070000000000000, count: 0 },
+                { id: 'eternalEmpire', name: 'Eternal Pizza Empire', icon: '🏰', description: 'An empire that never ends', baseCost: 21536000000000000000000, baseProduction: 31117650407300000000000000, count: 0 },
+                { id: 'pizzaDynasty', name: 'Infinite Pizza Dynasty', icon: '👑', description: 'Generations of pizza rulers', baseCost: 27997000000000000000000, baseProduction: 43564730570220000000000000, count: 0 },
+                { id: 'cosmicDynasty', name: 'Cosmic Pizza Dynasty', icon: '🌟', description: 'Your bloodline rules the cosmos', baseCost: 36396000000000000000000, baseProduction: 60990622798310000000000000, count: 0 },
+                { id: 'universalLineage', name: 'Universal Pizza Lineage', icon: '🧬', description: 'All life descends from your pizza', baseCost: 47315000000000000000000, baseProduction: 85386871917640000000000000, count: 0 },
+                { id: 'omniversalBlood', name: 'Omniversal Pizza Bloodline', icon: '💎', description: 'Royal pizza in every reality', baseCost: 61510000000000000000000, baseProduction: 119541620664900000000000000, count: 0 },
+                { id: 'eternalBlood', name: 'Eternal Royal Pizza Blood', icon: '🩸', description: 'Immortal pizza nobility', baseCost: 79960000000000000000000, baseProduction: 167358268930900000000000000, count: 0 },
+                { id: 'supremeLineage', name: 'Supreme Pizza Lineage', icon: '👑', description: 'The ultimate pizza family', baseCost: 103950000000000000000000, baseProduction: 234301576503300000000000000, count: 0 },
+                { id: 'pizzaAscension', name: 'Final Pizza Ascension', icon: '⬆️', description: 'Ascend beyond all concepts', baseCost: 135140000000000000000000, baseProduction: 327922207104700000000000000, count: 0 },
+                { id: 'trueEnd', name: 'True Pizza End', icon: '🔚', description: 'The real final upgrade', baseCost: 175680000000000000000000, baseProduction: 459091089946600000000000000, count: 0 },
+                { id: 'beyondEnd', name: 'Beyond the Pizza End', icon: '🚪', description: 'There was more after all', baseCost: 228380000000000000000000, baseProduction: 642727525924900000000000000, count: 0 },
+                { id: 'postEnd', name: 'Post-Pizza Endgame', icon: '🎲', description: 'What comes after the end?', baseCost: 296890000000000000000000, baseProduction: 899818536294900000000000000, count: 0 },
+                { id: 'metaEnd', name: 'Meta-Pizza End', icon: '🖥️', description: 'Break the fourth pizza wall', baseCost: 385960000000000000000000, baseProduction: 1259745551813000000000000000, count: 0 },
+                { id: 'developerPizza', name: 'Developer Mode Pizza', icon: '💻', description: 'Access the pizza source code', baseCost: 501750000000000000000000, baseProduction: 1763623772538000000000000000, count: 0 },
+                { id: 'godModePizza', name: 'God Mode Pizza', icon: '🛡️', description: 'Infinite money, infinite power', baseCost: 652270000000000000000000, baseProduction: 2471073281553000000000000000, count: 0 },
+                { id: 'creativePizza', name: 'Creative Pizza Mode', icon: '🎨', description: 'Build whatever pizza you imagine', baseCost: 848000000000000000000000, baseProduction: 3459502594174000000000000000, count: 0 },
+                { id: 'pizzaEditor', name: 'Pizza Game Editor', icon: '📝', description: 'Edit the pizza game itself', baseCost: 1102400000000000000000000, baseProduction: 4843303631844000000000000000, count: 0 },
+                { id: 'sourceAccess', name: 'Pizza Source Access', icon: '🔑', description: 'You now control the pizza reality', baseCost: 1433100000000000000000000, baseProduction: 6780625084581000000000000000, count: 0 },
+                { id: 'realityControl', name: 'Pizza Reality Control', icon: '🎛️', description: 'Adjust pizza physics at will', baseCost: 1863000000000000000000000, baseProduction: 9482875118414000000000000000, count: 0 },
+                { id: 'omnipotentPizza', name: 'Omnipotent Pizza', icon: '⚡', description: 'All pizza power is yours', baseCost: 2422000000000000000000000, baseProduction: 13276025165780000000000000000, count: 0 },
+                { id: 'omniscientPizza', name: 'Omniscient Pizza', icon: '👁️', description: 'Know all pizza knowledge', baseCost: 3149000000000000000000000, baseProduction: 18586435252090000000000000000, count: 0 },
+                { id: 'omnipresentPizza', name: 'Omnipresent Pizza', icon: '🌐', description: 'Exist in all pizzas simultaneously', baseCost: 4094000000000000000000000, baseProduction: 26020989352930000000000000000, count: 0 },
+                { id: 'trueOmni', name: 'True Pizza Omnipotence', icon: '🔱', description: 'The ultimate pizza power', baseCost: 5322000000000000000000000, baseProduction: 36429385094100000000000000000, count: 0 },
+                { id: 'pizzaAuthor', name: 'Pizza Author Authority', icon: '✍️', description: 'You wrote the pizza reality', baseCost: 6920000000000000000000000, baseProduction: 50981139131740000000000000000, count: 0 },
+                { id: 'finalAuthority', name: 'Final Pizza Authority', icon: '⚖️', description: 'Your word is pizza law', baseCost: 8996000000000000000000000, baseProduction: 71373594784440000000000000000, count: 0 },
+                { id: 'pizzaCreator', name: 'Pizza Creator Supreme', icon: '🛠️', description: 'You created pizza itself', baseCost: 11695000000000000000000000, baseProduction: 99923032698220000000000000000, count: 0 },
+                { id: 'pizzaOrigin', name: 'Origin of All Pizza', icon: '🌱', description: 'You are where pizza began', baseCost: 15204000000000000000000000, baseProduction: 139892245837500000000000000000, count: 0 },
+                { id: 'pizzaAlpha', name: 'Pizza Alpha', icon: 'Α', description: 'The first pizza, the prime pizza', baseCost: 19765000000000000000000000, baseProduction: 195849144172500000000000000000, count: 0 },
+                { id: 'pizzaOmegaFinal', name: 'Pizza Omega Final', icon: 'Ω', description: 'The last pizza, the ultimate pizza', baseCost: 25695000000000000000000000, baseProduction: 274188801841500000000000000000, count: 0 },
+                { id: 'completeCycle', name: 'Complete Pizza Cycle', icon: '⭕', description: 'The circle is now complete', baseCost: 33404000000000000000000000, baseProduction: 383864322578100000000000000000, count: 0 },
+                { id: 'perfectHarmony', name: 'Perfect Pizza Harmony', icon: '☯️', description: 'All pizza in perfect balance', baseCost: 43425000000000000000000000, baseProduction: 537409851609500000000000000000, count: 0 },
+                { id: 'ultimatePeace', name: 'Ultimate Pizza Peace', icon: '🕊️', description: 'Universal pizza tranquility', baseCost: 56453000000000000000000000, baseProduction: 752373792254300000000000000000, count: 0 },
+                { id: 'pizzaNirvana', name: 'Pizza Nirvana Achieved', icon: '🧘', description: 'Perfect pizza enlightenment', baseCost: 73400000000000000000000000, baseProduction: 1053325309156000000000000000000, count: 0 },
+                { id: 'transcendentPeace', name: 'Transcendent Pizza Peace', icon: '☮️', description: 'Peace beyond understanding', baseCost: 95420000000000000000000000, baseProduction: 1474655432819000000000000000000, count: 0 },
+                { id: 'eternalCalm', name: 'Eternal Pizza Calm', icon: '🌅', description: 'Forever at peace with pizza', baseCost: 124045000000000000000000000, baseProduction: 2064517605947000000000000000000, count: 0 },
+                { id: 'finalRest', name: 'Final Pizza Rest', icon: '😴', description: 'The game is complete. Rest now.', baseCost: 161260000000000000000000000, baseProduction: 2890324648326000000000000000000, count: 0 }
+            ]
+        };
+
+        function formatNumber(num) {
+            if (num >= 1000000000) return (num / 1000000000).toFixed(2) + 'B';
+            if (num >= 1000000) return (num / 1000000).toFixed(2) + 'M';
+            if (num >= 1000) return (num / 1000).toFixed(2) + 'K';
+            return Math.floor(num);
+        }
+
+        function getUpgradeCost(upgrade) {
+            return Math.floor(upgrade.baseCost * Math.pow(1.15, upgrade.count));
+        }
+
+        function getUpgradeProduction(upgrade) {
+            return upgrade.baseProduction * upgrade.count;
+        }
+
+        function calculateMoneyPerSecond() {
+            game.moneyPerSecond = 0;
+            game.upgrades.forEach(upgrade => {
+                game.moneyPerSecond += getUpgradeProduction(upgrade);
+            });
+        }
+
+        function showMoneyGain(amount, x, y) {
+            const elem = document.createElement('div');
+            elem.className = 'money-gain';
+            elem.textContent = '+$' + amount;
+            elem.style.left = x + 'px';
+            elem.style.top = y + 'px';
+            document.body.appendChild(elem);
+            setTimeout(() => elem.remove(), 1000);
+        }
+
+        function makePizza(e) {
+            game.money += game.moneyPerClick;
+            updateDisplay();
+            showMoneyGain(game.moneyPerClick, e.clientX, e.clientY);
+            playClickSound();
+        }
+
+        function buyUpgrade(upgradeId) {
+            const upgrade = game.upgrades.find(u => u.id === upgradeId);
+            const cost = getUpgradeCost(upgrade);
+            
+            if (game.money >= cost) {
+                game.money -= cost;
+                upgrade.count++;
+                calculateMoneyPerSecond();
+                updateDisplay();
+                playPurchaseSound();
+            }
+        }
+
+        function updateDisplay() {
+            document.getElementById('money').textContent = formatNumber(game.money);
+            document.getElementById('perSecond').textContent = formatNumber(game.moneyPerSecond);
+            
+            game.upgrades.forEach(upgrade => {
+                const cost = getUpgradeCost(upgrade);
+                const btn = document.getElementById(`btn-${upgrade.id}`);
+                const count = document.getElementById(`count-${upgrade.id}`);
+                const production = document.getElementById(`prod-${upgrade.id}`);
+                
+                btn.textContent = `Buy - $${formatNumber(cost)}`;
+                btn.disabled = game.money < cost;
+                count.textContent = `Owned: ${upgrade.count}`;
+                production.textContent = `📈 +$${formatNumber(getUpgradeProduction(upgrade))}/sec`;
+            });
+        }
+
+        function createUpgradeCards() {
+            const container = document.getElementById('upgradesContainer');
+            game.upgrades.forEach(upgrade => {
+                const card = document.createElement('div');
+                card.className = 'upgrade-card';
+                card.innerHTML = `
+                    <div class="upgrade-header">
+                        <div class="upgrade-icon">${upgrade.icon}</div>
+                        <div class="upgrade-info">
+                            <h3>${upgrade.name}</h3>
+                            <div class="upgrade-count" id="count-${upgrade.id}">Owned: 0</div>
+                        </div>
+                    </div>
+                    <div class="upgrade-description">${upgrade.description}</div>
+                    <button class="upgrade-btn" id="btn-${upgrade.id}">Buy - $${upgrade.baseCost}</button>
+                    <div class="production-display" id="prod-${upgrade.id}">📈 +$0/sec</div>
+                `;
+                container.appendChild(card);
+                
+                document.getElementById(`btn-${upgrade.id}`).addEventListener('click', () => buyUpgrade(upgrade.id));
+            });
+        }
+
+        document.getElementById('makePizzaBtn').addEventListener('click', makePizza);
+
+        // Save/Load functionality
+        function saveGame() {
+            const saveData = {
+                money: game.money,
+                upgrades: game.upgrades.map(u => ({ id: u.id, count: u.count })),
+                settings: {
+                    musicEnabled,
+                    sfxEnabled,
+                    musicVolume
+                }
+            };
+            localStorage.setItem('pizzaTycoonSave', JSON.stringify(saveData));
+            
+            const msg = document.getElementById('saveMessage');
+            msg.textContent = '✅ Game saved!';
+            setTimeout(() => msg.textContent = '', 2000);
+        }
+
+        function loadGame() {
+            const saveData = localStorage.getItem('pizzaTycoonSave');
+            if (saveData) {
+                const data = JSON.parse(saveData);
+                game.money = data.money;
+                data.upgrades.forEach(savedUpgrade => {
+                    const upgrade = game.upgrades.find(u => u.id === savedUpgrade.id);
+                    if (upgrade) {
+                        upgrade.count = savedUpgrade.count;
+                    }
+                });
+                
+                // Load settings
+                if (data.settings) {
+                    musicEnabled = data.settings.musicEnabled !== false;
+                    sfxEnabled = data.settings.sfxEnabled !== false;
+                    musicVolume = data.settings.musicVolume || 0.3;
+                    
+                    updateSettingsUI();
+                }
+                
+                calculateMoneyPerSecond();
+                updateDisplay();
+                
+                const msg = document.getElementById('saveMessage');
+                msg.textContent = '✅ Game loaded!';
+                setTimeout(() => msg.textContent = '', 2000);
+            }
+        }
+
+        function resetGame() {
+            if (confirm('Are you sure you want to reset your game? This cannot be undone!')) {
+                localStorage.removeItem('pizzaTycoonSave');
+                location.reload();
+            }
+        }
+
+        document.getElementById('saveBtn').addEventListener('click', saveGame);
+        document.getElementById('resetBtn').addEventListener('click', resetGame);
+
+        // Settings functionality
+        const settingsBtn = document.getElementById('settingsBtn');
+        const settingsModal = document.getElementById('settingsModal');
+        const closeSettingsBtn = document.getElementById('closeSettings');
+        const musicToggle = document.getElementById('musicToggle');
+        const sfxToggle = document.getElementById('sfxToggle');
+        const musicVolumeSlider = document.getElementById('musicVolume');
+
+        settingsBtn.addEventListener('click', () => {
+            settingsModal.classList.add('active');
+            // Start music on first user interaction
+            if (!backgroundMusic && musicEnabled) {
+                createLofiMusic();
+            }
+        });
+
+        closeSettingsBtn.addEventListener('click', () => {
+            settingsModal.classList.remove('active');
+        });
+
+        settingsModal.addEventListener('click', (e) => {
+            if (e.target === settingsModal) {
+                settingsModal.classList.remove('active');
+            }
+        });
+
+        musicToggle.addEventListener('click', () => {
+            musicEnabled = !musicEnabled;
+            musicToggle.classList.toggle('active');
+            
+            if (musicEnabled && !backgroundMusic) {
+                createLofiMusic();
+            } else if (!musicEnabled && backgroundMusic) {
+                stopMusic();
+            }
+            saveGame();
+        });
+
+        sfxToggle.addEventListener('click', () => {
+            sfxEnabled = !sfxEnabled;
+            sfxToggle.classList.toggle('active');
+            saveGame();
+        });
+
+        musicVolumeSlider.addEventListener('input', (e) => {
+            musicVolume = e.target.value / 100;
+            if (backgroundMusic && musicEnabled) {
+                backgroundMusic.masterGain.gain.value = musicVolume;
+            }
+        });
+
+        musicVolumeSlider.addEventListener('change', () => {
+            saveGame();
+        });
+
+        function updateSettingsUI() {
+            musicToggle.classList.toggle('active', musicEnabled);
+            sfxToggle.classList.toggle('active', sfxEnabled);
+            musicVolumeSlider.value = musicVolume * 100;
+            
+            if (backgroundMusic && musicEnabled) {
+                backgroundMusic.masterGain.gain.value = musicVolume;
+            }
+        }
+
+        // Start music on first click
+        document.addEventListener('click', () => {
+            if (!backgroundMusic && musicEnabled) {
+                createLofiMusic();
+            }
+        }, { once: true });
+
+        // Auto-save every 30 seconds
+        setInterval(saveGame, 30000);
+
+        setInterval(() => {
+            game.money += game.moneyPerSecond / 10;
+            updateDisplay();
+        }, 100);
+
+        createUpgradeCards();
+        loadGame();
+        updateDisplay();
+    </script>
+</body>
+</html>
